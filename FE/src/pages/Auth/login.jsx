@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import API from "@/api/axios";
 import { Lock, Mail } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { login } = useAuth();
@@ -13,15 +14,23 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const res = await API.post("/auth/login", { email, password });
+
       if (res.data.token) {
+        toast.success("✅ Login successful! Redirecting...");
         login(res.data.token);
       } else {
-        alert("Invalid credentials");
+        toast.error("❌ Invalid credentials");
       }
-    } catch {
-      alert("Login failed. Please try again.");
+    } catch (err) {
+      console.error(err);
+      if (err.response?.status === 401) {
+        toast.error("Incorrect email or password");
+      } else {
+        toast.error("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
