@@ -9,6 +9,7 @@ import Login from "@/pages/Auth/Login";
 import Home from "@/pages/Home/Home";
 import LogPaperTabs from "@/pages/LogPaper/LogPaperTabs";
 import UserTabs from "@/pages/Users/UserTabs"; // ✅ Added import
+import ReportsTabs from "@/pages/Reports/ReportsTabs";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { token, user, loading } = useAuth();

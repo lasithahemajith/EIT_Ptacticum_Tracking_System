@@ -12,7 +12,7 @@ export default function Sidebar() {
   const navItems = [
     { label: "Home", path: "/home", icon: <Home size={18} /> },
     { label: "My Logs", path: "/logpapers", icon: <ClipboardList size={18} /> },
-    { label: "Reports", path: "#", icon: <FileText size={18} /> },
+    { label: "Reports", path: "/reports", icon: <FileText size={18} /> },
   ];
   console.log("Current user:", user);
 
