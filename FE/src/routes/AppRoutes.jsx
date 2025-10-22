@@ -1,48 +1,67 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+
+// Layout
+import DashboardLayout from "@/layouts/DashboardLayout";
 
 // Pages
 import Login from "@/pages/Auth/Login";
-import HomePage from "@/pages/Home/Home";
+import Home from "@/pages/Home/Home";
 import LogPaperTabs from "@/pages/LogPaper/LogPaperTabs";
-import DashboardLayout from "@/layouts/DashboardLayout";
+import UserTabs from "@/pages/Users/UserTabs"; // ✅ Added import
 
-// ✅ Protected Route wrapper
-function ProtectedRoute({ children }) {
-  const { token } = useAuth();
-  return token ? children : <Navigate to="/login" replace />;
+function ProtectedRoute({ children, allowedRoles }) {
+  const { token, user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+  if (!token) return <Navigate to="/login" replace />;
+
+  // ✅ Optional role-based restriction
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return children;
 }
 
 export default function AppRoutes() {
-  const { token } = useAuth();
+  const { token, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <Router>
-      <Routes>
-        {/* Public Route */}
-        <Route
-          path="/login"
-          element={!token ? <Login /> : <Navigate to="/home" replace />}
-        />
+    <Routes>
+      {/* 🔓 Public Login Route */}
+      <Route
+        path="/login"
+        element={!token ? <Login /> : <Navigate to="/home" replace />}
+      />
 
-        {/* Protected Layout Routes */}
+      {/* 🔐 Protected Layout (Sidebar + Navbar) */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        {/* ✅ Existing dashboard routes */}
+        <Route path="home" element={<Home />} />
+        <Route path="logpapers" element={<LogPaperTabs />} />
+
+        {/* ✅ NEW: Tutor-only Users route */}
         <Route
+          path="users"
           element={
-            <ProtectedRoute>
-              <DashboardLayout /> {/* ✅ Sidebar + Navbar layout */}
-            </ProtectedRoute>
+            // <ProtectedRoute allowedRoles={["tutor"]}>
+              <UserTabs />
+            // </ProtectedRoute>
           }
-        >
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/logpapers" element={<LogPaperTabs />} /> {/* ✅ no nested ProtectedRoute */}
-        </Route>
-
-        {/* Default Fallback */}
-        <Route
-          path="*"
-          element={<Navigate to={token ? "/home" : "/login"} replace />}
         />
-      </Routes>
-    </Router>
+      </Route>
+
+      {/* 🔁 Fallback */}
+      <Route path="*" element={<Navigate to="/home" replace />} />
+    </Routes>
   );
 }

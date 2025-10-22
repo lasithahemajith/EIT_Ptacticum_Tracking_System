@@ -4,12 +4,14 @@ import { useAuth } from "@/context/AuthContext";
 import API from "@/api/axios";
 import { Lock, Mail } from "lucide-react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,20 +19,22 @@ export default function Login() {
 
     try {
       const res = await API.post("/auth/login", { email, password });
+      console.log("Login response:", res.data);
 
-      if (res.data.token) {
+      if (res.data.token && res.data.user) {
         toast.success("✅ Login successful! Redirecting...");
-        login(res.data.token);
+        login(res.data.user, res.data.token);
+        navigate("/home");
       } else {
         toast.error("❌ Invalid credentials");
       }
     } catch (err) {
       console.error(err);
-      if (err.response?.status === 401) {
-        toast.error("Incorrect email or password");
-      } else {
-        toast.error("Login failed. Please try again.");
-      }
+      toast.error(
+        err.response?.status === 401
+          ? "Incorrect email or password"
+          : "Login failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -38,21 +42,6 @@ export default function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500 relative overflow-hidden">
-      {/* Floating shapes */}
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 0.3, y: 0 }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-        className="absolute w-60 h-60 bg-blue-200 rounded-full blur-3xl top-20 left-32"
-      ></motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 0.3, y: 0 }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-        className="absolute w-72 h-72 bg-pink-200 rounded-full blur-3xl bottom-24 right-32"
-      ></motion.div>
-
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}

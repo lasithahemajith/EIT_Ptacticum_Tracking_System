@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, ClipboardList, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, ClipboardList, FileText, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Sidebar() {
+  const { user } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -12,6 +14,16 @@ export default function Sidebar() {
     { label: "My Logs", path: "/logpapers", icon: <ClipboardList size={18} /> },
     { label: "Reports", path: "#", icon: <FileText size={18} /> },
   ];
+  console.log("Current user:", user);
+
+  if (user?.role === "Tutor") {
+    // Insert "Users" as the second item (index 1)
+    navItems.splice(1, 0, {
+        label: "Users",
+        path: "/users",
+        icon: <User size={18} />,
+    });
+  }
 
   return (
     <motion.aside
@@ -25,11 +37,7 @@ export default function Sidebar() {
           onClick={() => setCollapsed(!collapsed)}
           className="p-2 rounded-lg hover:bg-indigo-700 transition"
         >
-          {collapsed ? (
-            <ChevronRight size={18} />
-          ) : (
-            <ChevronLeft size={18} />
-          )}
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </div>
 
@@ -60,7 +68,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer (optional) */}
+      {/* Footer */}
       <div className="p-3 text-center border-t border-indigo-700 text-xs text-indigo-200">
         {!collapsed && <p className="opacity-70">EIT Practicum © 2025</p>}
       </div>

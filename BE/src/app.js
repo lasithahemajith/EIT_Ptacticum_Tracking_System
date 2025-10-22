@@ -21,6 +21,8 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
+app.use("/api/users", userRoutes);
+
 app.use("/logpaper", logPaperRoutes);
 
 app.get("/", (req, res) => {
