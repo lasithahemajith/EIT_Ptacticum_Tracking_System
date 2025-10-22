@@ -4,22 +4,30 @@ import { useAuth } from "@/context/AuthContext";
 // Layout
 import DashboardLayout from "@/layouts/DashboardLayout";
 
-// Pages
+// Auth
 import Login from "@/pages/Auth/Login";
-import Home from "@/pages/Home/Home";
-import LogPaperTabs from "@/pages/LogPaper/LogPaperTabs";
-import UserTabs from "@/pages/Users/UserTabs"; // ✅ Added import
-import ReportsTabs from "@/pages/Reports/ReportsTabs";
+
+// STUDENT
+import StudentHome from "@/pages/Student/Home/StudentHome";
+import LogPaperTabs from "@/pages/Student/LogPaper/LogPaperTabs";
+
+// MENTOR
+import MentorHome from "@/pages/Mentor/Home/MentorHome";
+import MentorStudents from "@/pages/Mentor/MentorStudents";
+// import MentorLogs from "@/pages/Mentor/MentorLogs";
+
+// TUTOR
+import TutorHome from "@/pages/Tutor/Home/TutorHome";
+import UserTabs from "@/pages/Tutor/Users/UserTabs";
+import ReportsTabs from "@/pages/Tutor/Reports/ReportsTabs";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { token, user, loading } = useAuth();
 
   if (loading) return <div>Loading...</div>;
   if (!token) return <Navigate to="/login" replace />;
-
-  // ✅ Optional role-based restriction
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/student/home" replace />;
   }
 
   return children;
@@ -31,13 +39,13 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      {/* 🔓 Public Login Route */}
+      {/* Public */}
       <Route
         path="/login"
-        element={!token ? <Login /> : <Navigate to="/home" replace />}
+        element={!token ? <Login /> : <Navigate to="/student/home" replace />}
       />
 
-      {/* 🔐 Protected Layout (Sidebar + Navbar) */}
+      {/* Protected Layout */}
       <Route
         path="/"
         element={
@@ -46,23 +54,65 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* ✅ Existing dashboard routes */}
-        <Route path="home" element={<Home />} />
-        <Route path="logpapers" element={<LogPaperTabs />} />
+        {/* ---------- STUDENT ---------- */}
+        <Route path="student/home" element={<StudentHome />} />
+        <Route path="student/logpapers" element={<LogPaperTabs />} />
 
-        {/* ✅ NEW: Tutor-only Users route */}
+        {/* ---------- MENTOR ---------- */}
         <Route
-          path="users"
+          path="mentor/home"
           element={
-            // <ProtectedRoute allowedRoles={["tutor"]}>
+            <ProtectedRoute allowedRoles={["Mentor"]}>
+              <MentorHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="mentor/students"
+          element={
+            <ProtectedRoute allowedRoles={["Mentor"]}>
+              <MentorStudents />
+            </ProtectedRoute>
+          }
+        />
+        {/* <Route
+          path="mentor/logs"
+          element={
+            <ProtectedRoute allowedRoles={["Mentor"]}>
+              <MentorLogs />
+            </ProtectedRoute>
+          }
+        /> */}
+
+        {/* ---------- TUTOR ---------- */}
+        <Route
+          path="tutor/home"
+          element={
+            <ProtectedRoute allowedRoles={["Tutor"]}>
+              <TutorHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="tutor/users"
+          element={
+            <ProtectedRoute allowedRoles={["Tutor"]}>
               <UserTabs />
-            // </ProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="tutor/reports"
+          element={
+            <ProtectedRoute allowedRoles={["Tutor"]}>
+              <ReportsTabs />
+            </ProtectedRoute>
           }
         />
       </Route>
 
-      {/* 🔁 Fallback */}
-      <Route path="*" element={<Navigate to="/home" replace />} />
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/student/home" replace />} />
     </Routes>
   );
 }

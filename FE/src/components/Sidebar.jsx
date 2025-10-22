@@ -1,5 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, ClipboardList, FileText, ChevronLeft, ChevronRight, User } from "lucide-react";
+import {
+  Home,
+  ClipboardList,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Users,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -9,20 +17,25 @@ export default function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  const navItems = [
-    { label: "Home", path: "/home", icon: <Home size={18} /> },
-    { label: "My Logs", path: "/logpapers", icon: <ClipboardList size={18} /> },
-    { label: "Reports", path: "/reports", icon: <FileText size={18} /> },
-  ];
-  console.log("Current user:", user);
+  let navItems = [];
 
   if (user?.role === "Tutor") {
-    // Insert "Users" as the second item (index 1)
-    navItems.splice(1, 0, {
-        label: "Users",
-        path: "/users",
-        icon: <User size={18} />,
-    });
+    navItems = [
+      { label: "Home", path: "/tutor/home", icon: <Home size={18} /> },
+      { label: "Users", path: "/tutor/users", icon: <User size={18} /> },
+      { label: "Reports", path: "/tutor/reports", icon: <FileText size={18} /> },
+    ];
+  } else if (user?.role === "Mentor") {
+    navItems = [
+      { label: "Home", path: "/mentor/home", icon: <Home size={18} /> },
+      { label: "Students", path: "/mentor/students", icon: <Users size={18} /> },
+      { label: "Logs", path: "/mentor/logs", icon: <ClipboardList size={18} /> },
+    ];
+  } else if (user?.role === "Student") {
+    navItems = [
+      { label: "Home", path: "/student/home", icon: <Home size={18} /> },
+      { label: "My Logs", path: "/student/logpapers", icon: <ClipboardList size={18} /> },
+    ];
   }
 
   return (
@@ -41,10 +54,10 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Navigation Items */}
+      {/* Nav Items */}
       <nav className="flex flex-col flex-1 px-2 py-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-600 scrollbar-track-indigo-800">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname.startsWith(item.path);
           return (
             <Link
               key={item.path}
@@ -68,7 +81,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="p-3 text-center border-t border-indigo-700 text-xs text-indigo-200">
         {!collapsed && <p className="opacity-70">EIT Practicum © 2025</p>}
       </div>

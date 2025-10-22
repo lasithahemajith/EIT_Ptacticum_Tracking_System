@@ -8,6 +8,7 @@ import {
     mapMentorToStudent,
     getMappings,
     unmapMentorFromStudent,
+    getAssignedStudents,
   } from "../controllers/userController.js";
   
 const router = express.Router();
@@ -21,7 +22,8 @@ router.get("/profile", verifyToken, getProfile);
 // router.post("/map", verifyToken, mapMentorToStudent);
 
 
-
+// ✅ NEW endpoint for mentors
+router.get("/assigned-students", verifyToken, getAssignedStudents);
 
 // Tutor (admin) only
 router.post("/", requireRole("Tutor"), createUser);

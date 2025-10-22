@@ -140,3 +140,37 @@ export const unmapMentorFromStudent = async (req, res) => {
   }
 };
 
+// ✅ Get students assigned to logged-in mentor
+export const getAssignedStudents = async (req, res) => {
+  try {
+    if (req.user.role !== "Mentor") {
+      return res.status(403).json({ error: "Access denied. Mentors only." });
+    }
+
+    const mentorId = req.user.id;
+
+    // 🔹 Query MentorStudentMap and join with student User records
+    const mappings = await prisma.mentorStudentMap.findMany({
+      where: { mentorId },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    // Flatten to return just the student objects
+    const students = mappings.map((m) => m.student);
+
+    res.json(students);
+  } catch (err) {
+    console.error("❌ getAssignedStudents error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
