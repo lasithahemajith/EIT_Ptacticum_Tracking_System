@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "mentor", "tutor"],
       default: "student",
     },
+    mentorId: { type: Number }, // ✅ add this (mentor’s user.id from MySQL or other system)
+
   },
   { timestamps: true }
 );

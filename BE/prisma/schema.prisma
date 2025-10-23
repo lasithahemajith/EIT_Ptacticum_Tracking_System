@@ -1,13 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  //output   = "../src/generated/prisma"
-  
 }
 
 datasource db {
@@ -15,11 +7,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  Student
+  Mentor
+  Tutor
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   password  String
-  role      String   @default("student")
+  role      Role     @default(Student)
   createdAt DateTime @default(now())
+
+  // Relations for mentor-student mapping
+  mentorMappings  MentorStudentMap[] @relation("MentorRelation")
+  studentMappings MentorStudentMap[] @relation("StudentRelation")
+}
+
+model MentorStudentMap {
+  id        Int      @id @default(autoincrement())
+  mentorId  Int
+  studentId Int
+  createdAt DateTime @default(now())
+
+  mentor  User @relation("MentorRelation", fields: [mentorId], references: [id], onDelete: Cascade)
+  student User @relation("StudentRelation", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([mentorId, studentId])
+  @@index([mentorId])
+  @@index([studentId])
 }

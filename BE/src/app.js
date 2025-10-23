@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import logPaperRoutes from "./routes/logPaperRoutes.js";
 import path from "path";  // ✅ Add this line
+import mentorFeedbackRoutes from "./routes/mentorFeedbackRoutes.js";
 
 dotenv.config(); // ✅ must come before connectMongo()
 
@@ -21,7 +22,12 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
+app.use("/api/users", userRoutes);
+
 app.use("/logpaper", logPaperRoutes);
+
+
+app.use("/mentor-feedback", mentorFeedbackRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Practicum Tracker API Running" });
