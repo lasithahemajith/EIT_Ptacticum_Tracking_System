@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const logPaperSchema = new mongoose.Schema(
   {
-    studentId: { type: Number, required: true }, // MySQL user ID
+    studentId: { type: Number, required: true }, // MySQL user ID (from Prisma)
     mentorId: { type: Number },
     date: { type: Date, required: true },
     startTime: { type: String },
@@ -30,4 +30,5 @@ const logPaperSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("LogPaper", logPaperSchema);
+const LogPaper = mongoose.model("LogPaper", logPaperSchema);
+export default LogPaper;

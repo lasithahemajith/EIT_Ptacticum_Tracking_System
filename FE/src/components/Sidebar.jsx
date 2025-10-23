@@ -29,7 +29,8 @@ export default function Sidebar() {
     navItems = [
       { label: "Home", path: "/mentor/home", icon: <Home size={18} /> },
       { label: "Students", path: "/mentor/students", icon: <Users size={18} /> },
-      { label: "Logs", path: "/mentor/logs", icon: <ClipboardList size={18} /> },
+    //   { label: "Logs", path: "/mentor/logs", icon: <ClipboardList size={18} /> },
+      { label: "Reports", path: "/mentor/reports", icon: <FileText size={18} /> }, // ✅ new
     ];
   } else if (user?.role === "Student") {
     navItems = [

@@ -14,7 +14,8 @@ import LogPaperTabs from "@/pages/Student/LogPaper/LogPaperTabs";
 // MENTOR
 import MentorHome from "@/pages/Mentor/Home/MentorHome";
 import MentorStudents from "@/pages/Mentor/MentorStudents";
-// import MentorLogs from "@/pages/Mentor/MentorLogs";
+import MentorReports from "@/pages/mentor/Reports/MentorReports";
+import MentorLogDetails from "@/pages/mentor/Reports/MentorLogDetails";
 
 // TUTOR
 import TutorHome from "@/pages/Tutor/Home/TutorHome";
@@ -75,14 +76,23 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        {/* <Route
-          path="mentor/logs"
+        <Route
+          path="mentor/reports"
           element={
             <ProtectedRoute allowedRoles={["Mentor"]}>
-              <MentorLogs />
+              <MentorReports />
             </ProtectedRoute>
           }
-        /> */}
+        />
+        
+        <Route
+          path="mentor/reports/:id"
+          element={
+            <ProtectedRoute allowedRoles={["Mentor"]}>
+              <MentorLogDetails />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ---------- TUTOR ---------- */}
         <Route

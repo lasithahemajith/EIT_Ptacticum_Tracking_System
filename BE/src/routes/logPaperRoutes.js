@@ -10,6 +10,8 @@ import {
   verifyLogPaper,
   addTutorFeedback,
   getAllLogs,
+  getMentorLogs,
+  getLogPaperById,
 } from "../controllers/logPaperController.js";
 
 dotenv.config();
@@ -41,5 +43,10 @@ router.get("/my", verifyToken, getMyLogPapers);
 router.patch("/:id/verify", verifyToken, verifyLogPaper);
 router.patch("/:id/feedback", verifyToken, addTutorFeedback);
 router.get("/all", verifyToken, getAllLogs);
+
+// ✅ Get single log by ID
+router.get("/:id", verifyToken, getLogPaperById);
+// ✅ Mentor-only logs route
+router.get("/mentor/reports", verifyToken, getMentorLogs);
 
 export default router;

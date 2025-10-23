@@ -1,21 +1,17 @@
 import { motion } from "framer-motion";
-import { ClipboardList, FileText, Clock, LogOut } from "lucide-react";
+import { Users, ClipboardList, CheckCircle, Clock, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import Sidebar from "@/components/Sidebar";
 
-export default function Home() {
-  const { user, logout } = useAuth();
+export default function MentorDashboard() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100">
-      
-
-      {/* ✅ Main Content Area */}
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-purple-100">
+      {/* ✅ Main Content */}
       <div className="flex-1 flex flex-col">
-
-        {/* Main Content */}
+        {/* Header */}
         <main className="flex-1 p-10 overflow-y-auto">
           <motion.h2
             initial={{ x: -20, opacity: 0 }}
@@ -23,31 +19,31 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="text-3xl font-semibold text-indigo-900 mb-8"
           >
-            Practicum Dashboard
+            Mentor Dashboard
           </motion.h2>
 
           {/* Dashboard Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <DashboardCard
-              icon={<ClipboardList size={28} />}
-              title="Daily Logs"
-              desc="View and manage your practicum log entries."
+              icon={<Users size={28} />}
+              title="Assigned Students"
+              desc="View and manage your assigned practicum students."
               color="from-blue-500 to-indigo-600"
-              action={() => navigate("/logpapers")}
+              action={() => navigate("/mentor/students")}
             />
             <DashboardCard
-              icon={<Clock size={28} />}
-              title="Add Log Entry"
-              desc="Record your daily activities, hours, and reflections."
+              icon={<ClipboardList size={28} />}
+              title="Profile"
+              desc="Review and verify practicum log entries."
               color="from-purple-500 to-pink-500"
-              action={() => navigate("/logpapers/add")}
+              // action={() => navigate("/mentor/logs")}
             />
             <DashboardCard
               icon={<FileText size={28} />}
               title="Reports"
-              desc="Generate summaries and performance analytics."
+              desc="Analyze student progress and performance reports."
               color="from-green-500 to-emerald-600"
-              action={() => navigate("#")}
+              action={() => navigate("/mentor/reports")}
             />
           </div>
 
@@ -59,24 +55,40 @@ export default function Home() {
             className="mt-12 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
           >
             <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-              Summary Statistics
+              Mentor Summary Overview
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <SummaryCard
-                label="Total Logs Submitted"
-                value="14"
+                label="Assigned Students"
+                value="8"
                 color="text-blue-600"
               />
               <SummaryCard
-                label="Hours Completed"
-                value="72"
-                color="text-green-600"
+                label="Total Logs Submitted"
+                value="94"
+                color="text-indigo-600"
               />
               <SummaryCard
-                label="Mentor Feedbacks"
-                value="5"
-                color="text-purple-600"
+                label="Pending Approvals"
+                value="12"
+                color="text-orange-500"
               />
+              <SummaryCard
+                label="Approved Logs"
+                value="82"
+                color="text-green-600"
+              />
+            </div>
+
+            {/* Optional: small insights area */}
+            <div className="mt-10 text-sm text-gray-600">
+              <p>
+                ✅ Keep reviewing pending logs promptly to maintain student progress tracking.
+              </p>
+              <p>
+                📊 Generate reports to monitor weekly or monthly practicum engagement.
+              </p>
             </div>
           </motion.section>
         </main>
