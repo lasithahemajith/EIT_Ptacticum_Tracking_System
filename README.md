@@ -26,3 +26,6 @@ Do **not** push your actual data — instead, export the schema:
 
 ```bash
 mysqldump -u root -p --no-data practicum > schema.sql
+
+
+Mongodb has logpapers 

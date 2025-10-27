@@ -10,6 +10,7 @@ import Login from "@/pages/Auth/Login";
 // STUDENT
 import StudentHome from "@/pages/Student/Home/StudentHome";
 import LogPaperTabs from "@/pages/Student/LogPaper/LogPaperTabs";
+import LogPaperDetails from "@/pages/Student/LogPaper/LogPaperDetails";
 
 // MENTOR
 import MentorHome from "@/pages/Mentor/Home/MentorHome";
@@ -58,6 +59,9 @@ export default function AppRoutes() {
         {/* ---------- STUDENT ---------- */}
         <Route path="student/home" element={<StudentHome />} />
         <Route path="student/logpapers" element={<LogPaperTabs />} />
+        // ...
+        <Route path="student/logpapers/:id" element={<LogPaperDetails />} />
+
 
         {/* ---------- MENTOR ---------- */}
         <Route
