@@ -1,152 +1,195 @@
-import React, { useEffect, useState, useMemo } from "react";
-import API from "@/api/axios";
+import { motion } from "framer-motion";
+import { ClipboardList, Users, FileText, Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import API from "@/api/axios";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function MentorReports() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("Pending");
-  const { token } = useAuth();
+export default function MentorHome() {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // ✅ Read ?tab=Pending from URL on load
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const tab = params.get("tab");
-    if (tab) setActiveTab(tab);
-  }, [location.search]);
+  const [stats, setStats] = useState({
+    assignedStudents: 0,
+    totalLogs: 0,
+    pendingReviews: 0,
+    approvedLogs: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
-        const res = await API.get("/logpaper/mentor/reports", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setLogs(res.data || []);
+        const [studentsRes, logsRes] = await Promise.all([
+          API.get("/users/assigned-students"),
+          API.get("/logpaper/my"),
+        ]);
+
+        const logs = logsRes.data || [];
+        const pending = logs.filter((l) => l.status === "Pending").length;
+        const approved = logs.filter((l) => l.status === "Verified").length;
+
+        if (active) {
+          setStats({
+            assignedStudents: studentsRes.data?.length || 0,
+            totalLogs: logs.length,
+            pendingReviews: pending,
+            approvedLogs: approved,
+          });
+        }
       } catch (err) {
-        console.error("Error loading mentor logs:", err);
+        console.error("Mentor dashboard load error:", err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     })();
-  }, [token]);
-
-  const filteredLogs = useMemo(() => {
-    if (activeTab === "All") return logs;
-    return logs.filter((l) => l.status === activeTab);
-  }, [logs, activeTab]);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-[70vh]">
-        <Loader2 className="animate-spin text-indigo-600" size={36} />
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
       </div>
     );
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold text-indigo-900 mb-6">
-        Mentor Reports
-      </h2>
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100">
+      <div className="flex-1 flex flex-col p-10 overflow-y-auto">
+        {/* Header */}
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-3xl font-semibold text-indigo-900 mb-2"
+        >
+          Welcome back, {user?.name || "Mentor"}
+        </motion.h2>
+        <p className="text-gray-600 mb-10">
+          Here’s a quick overview of your assigned students and their practicum
+          progress.
+        </p>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-3 mb-6 border-b border-indigo-200">
-        {["Pending", "Verified", "All"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              navigate(`?tab=${tab}`);
-            }}
-            className={`px-5 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-              activeTab === tab
-                ? "bg-indigo-600 text-white shadow"
-                : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-            }`}
-          >
-            {tab}
-          </button>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <SummaryCard
+            label="Assigned Students"
+            value={stats.assignedStudents}
+            icon={<Users />}
+            color="text-indigo-600"
+            onClick={() => navigate("/mentor/students")}
+          />
+          <SummaryCard
+            label="All Logs"
+            value={stats.totalLogs}
+            icon={<ClipboardList />}
+            color="text-blue-600"
+            onClick={() => navigate("/mentor/reports")}
+          />
+
+          {/* 🔹 Highlighted Pending Verifications */}
+          <SummaryCard
+            label="Pending Verifications"
+            value={stats.pendingReviews}
+            icon={<Clock />}
+            color="text-blue-700"
+            highlight
+            onClick={() => navigate("/mentor/reports?status=Pending")}
+          />
+
+          <SummaryCard
+            label="Verified Logs"
+            value={stats.approvedLogs}
+            icon={<FileText />}
+            color="text-green-600"
+            onClick={() => navigate("/mentor/reports?status=Verified")}
+          />
+        </div>
+
+        {/* Insights Section */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-6 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
+        >
+          <h3 className="text-xl font-semibold text-indigo-800 mb-4">
+            Mentor Insights
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <InsightBox
+              title="Most Active Students"
+              items={[
+                "Jane Doe — 10 verified logs",
+                "Michael Lee — 8 verified logs",
+                "Sara Khan — 7 verified logs",
+              ]}
+            />
+            <InsightBox
+              title="Pending Student Logs"
+              items={[
+                "Emily Brown — 3 pending logs",
+                "Robert Taylor — 2 pending logs",
+                "Olivia Green — 1 pending log",
+              ]}
+            />
+          </div>
+        </motion.section>
+
+        {/* Footer */}
+        <footer className="text-center py-6 text-indigo-600 text-sm opacity-80 mt-12">
+          © 2025 EIT Practicum Tracker | Mentor Dashboard
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+/* 🔹 SummaryCard Component */
+function SummaryCard({ label, value, icon, color, highlight, onClick }) {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      onClick={onClick}
+      className={`cursor-pointer flex flex-col items-center p-6 rounded-xl shadow-sm border transition ${
+        highlight
+          ? "bg-gradient-to-br from-blue-200 to-blue-100 border-blue-400 shadow-lg ring-2 ring-blue-300 animate-pulse-slow"
+          : "bg-white border-indigo-100 hover:shadow-md"
+      }`}
+    >
+      <div className={`mb-2 ${color} ${highlight ? "animate-pulse" : ""}`}>
+        {icon}
+      </div>
+      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      <p
+        className={`text-sm mt-1 ${
+          highlight ? "text-blue-900 font-semibold" : "text-gray-600"
+        }`}
+      >
+        {label}
+      </p>
+    </motion.div>
+  );
+}
+
+/* 🔹 InsightBox Component */
+function InsightBox({ title, items }) {
+  return (
+    <div className="bg-gradient-to-b from-indigo-50 to-white p-6 rounded-xl border border-indigo-100 shadow-sm">
+      <h4 className="font-semibold text-indigo-700 mb-3">{title}</h4>
+      <ul className="space-y-2 text-sm text-gray-700">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-center gap-2">
+            <div className="h-2 w-2 bg-indigo-400 rounded-full"></div>
+            {item}
+          </li>
         ))}
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto bg-white shadow rounded-xl border border-gray-200">
-        <table className="min-w-full text-sm text-gray-700">
-          <thead className="bg-indigo-600 text-white">
-            <tr>
-              <th className="px-3 py-2 text-left">Student</th>
-              <th className="px-3 py-2 text-left">Date</th>
-              <th className="px-3 py-2 text-left">Activity</th>
-              <th className="px-3 py-2 text-left">Hours</th>
-              <th className="px-3 py-2 text-left">Status</th>
-              <th className="px-3 py-2 text-left">Mentor Comment</th>
-              <th className="px-3 py-2 text-left">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLogs.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="text-center py-4 text-gray-500">
-                  No logs found for this category.
-                </td>
-              </tr>
-            ) : (
-              filteredLogs.map((log, i) => (
-                <tr
-                  key={log._id || i}
-                  className={`transition ${
-                    log.status === "Verified"
-                      ? "bg-green-50 hover:bg-green-100"
-                      : log.status === "Reviewed"
-                      ? "bg-blue-50 hover:bg-blue-100"
-                      : "bg-yellow-50 hover:bg-yellow-100"
-                  }`}
-                >
-                  <td className="px-3 py-2">{log.studentId || "—"}</td>
-                  <td className="px-3 py-2">
-                    {new Date(log.date).toLocaleDateString()}
-                  </td>
-                  <td className="px-3 py-2">{log.activity}</td>
-                  <td className="px-3 py-2">{log.totalHours ?? "-"}</td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        log.status === "Verified"
-                          ? "bg-green-100 text-green-700"
-                          : log.status === "Reviewed"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {log.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-gray-600">
-                    {log.mentorComment ? (
-                      log.mentorComment.slice(0, 50) + "…"
-                    ) : (
-                      <span className="italic text-gray-400">
-                        Pending mentor feedback
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2">
-                    <button
-                      onClick={() => navigate(`/mentor/reports/${log._id}`)}
-                      className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-                    >
-                      {log.status === "Pending" ? "Verify" : "View"}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      </ul>
     </div>
   );
 }
