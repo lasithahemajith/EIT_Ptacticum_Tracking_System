@@ -10,18 +10,18 @@ import {
   verifyLogPaper,
   addTutorFeedback,
   getAllLogs,
+  getMentorLogs,
+  getLogPaperById,
 } from "../controllers/logPaperController.js";
 
 dotenv.config();
 const router = express.Router();
 
-// ✅ Ensure upload directory exists
 const uploadDir = path.resolve(process.env.UPLOAD_PATH || "uploads/logpapers");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// ✅ Configure multer for disk storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
@@ -41,5 +41,7 @@ router.get("/my", verifyToken, getMyLogPapers);
 router.patch("/:id/verify", verifyToken, verifyLogPaper);
 router.patch("/:id/feedback", verifyToken, addTutorFeedback);
 router.get("/all", verifyToken, getAllLogs);
+router.get("/mentor/reports", verifyToken, getMentorLogs);
+router.get("/:id", verifyToken, getLogPaperById);
 
 export default router;

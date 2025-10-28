@@ -1,22 +1,50 @@
-import { createContext, useContext, useState } from 'react';
+// src/context/AuthContext.jsx
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (jwt) => {
-    localStorage.setItem('token', jwt);
-    setToken(jwt);
+  // Load auth state from localStorage on first render
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      const storedToken = localStorage.getItem("token");
+
+      if (storedUser && storedUser !== "undefined") {
+        setUser(JSON.parse(storedUser));
+      }
+      if (storedToken && storedToken !== "undefined") {
+        setToken(storedToken);
+      }
+    } catch (err) {
+      console.error("Error loading auth data:", err);
+      localStorage.clear();
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Login
+  const login = (userData, tokenData) => {
+    setUser(userData);
+    setToken(tokenData);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", tokenData);
   };
 
+  // Logout
   const logout = () => {
-    localStorage.removeItem('token');
+    setUser(null);
     setToken(null);
+    localStorage.clear();
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
