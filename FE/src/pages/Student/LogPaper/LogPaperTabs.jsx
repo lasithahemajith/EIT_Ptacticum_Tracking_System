@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import AddLogPaper from "@/pages/LogPaper/AddLogPaper";
-import LogPaperList from "@/pages/LogPaper/LogPaperList";
+import AddLogPaper from "@/pages/Student/LogPaper/AddLogPaper";
+import LogPaperList from "@/pages/Student/LogPaper/LogPaperList";
 
 export default function LogPaperTabs() {
   const [activeTab, setActiveTab] = useState("add");
