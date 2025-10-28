@@ -1,136 +1,152 @@
-import { motion } from "framer-motion";
-import { Users, ClipboardList, CheckCircle, Clock, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import API from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
+import { Loader2 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function MentorDashboard() {
-  const { user } = useAuth();
+export default function MentorReports() {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("Pending");
+  const { token } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  return (
-    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-purple-100">
-      {/* ✅ Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <main className="flex-1 p-10 overflow-y-auto">
-          <motion.h2
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-semibold text-indigo-900 mb-8"
-          >
-            Mentor Dashboard
-          </motion.h2>
+  // ✅ Read ?tab=Pending from URL on load
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab) setActiveTab(tab);
+  }, [location.search]);
 
-          {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <DashboardCard
-              icon={<Users size={28} />}
-              title="Assigned Students"
-              desc="View and manage your assigned practicum students."
-              color="from-blue-500 to-indigo-600"
-              action={() => navigate("/mentor/students")}
-            />
-            <DashboardCard
-              icon={<ClipboardList size={28} />}
-              title="Profile"
-              desc="Review and verify practicum log entries."
-              color="from-purple-500 to-pink-500"
-              // action={() => navigate("/mentor/logs")}
-            />
-            <DashboardCard
-              icon={<FileText size={28} />}
-              title="Reports"
-              desc="Analyze student progress and performance reports."
-              color="from-green-500 to-emerald-600"
-              action={() => navigate("/mentor/reports")}
-            />
-          </div>
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await API.get("/logpaper/mentor/reports", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLogs(res.data || []);
+      } catch (err) {
+        console.error("Error loading mentor logs:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [token]);
 
-          {/* Summary Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-12 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
-          >
-            <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-              Mentor Summary Overview
-            </h3>
+  const filteredLogs = useMemo(() => {
+    if (activeTab === "All") return logs;
+    return logs.filter((l) => l.status === activeTab);
+  }, [logs, activeTab]);
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <SummaryCard
-                label="Assigned Students"
-                value="8"
-                color="text-blue-600"
-              />
-              <SummaryCard
-                label="Total Logs Submitted"
-                value="94"
-                color="text-indigo-600"
-              />
-              <SummaryCard
-                label="Pending Approvals"
-                value="12"
-                color="text-orange-500"
-              />
-              <SummaryCard
-                label="Approved Logs"
-                value="82"
-                color="text-green-600"
-              />
-            </div>
-
-            {/* Optional: small insights area */}
-            <div className="mt-10 text-sm text-gray-600">
-              <p>
-                ✅ Keep reviewing pending logs promptly to maintain student progress tracking.
-              </p>
-              <p>
-                📊 Generate reports to monitor weekly or monthly practicum engagement.
-              </p>
-            </div>
-          </motion.section>
-        </main>
-
-        {/* Footer */}
-        <footer className="text-center py-4 text-indigo-600 text-sm opacity-80">
-          © 2025 EIT Practicum Tracker
-        </footer>
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-[70vh]">
+        <Loader2 className="animate-spin text-indigo-600" size={36} />
       </div>
-    </div>
-  );
-}
+    );
 
-/* 🔹 Reusable DashboardCard Component */
-function DashboardCard({ icon, title, desc, color, action }) {
   return (
-    <motion.div
-      whileHover={{ scale: 1.03 }}
-      transition={{ duration: 0.2 }}
-      className={`bg-gradient-to-r ${color} text-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-2xl transition`}
-    >
-      <div>
-        <div className="mb-3">{icon}</div>
-        <h3 className="text-xl font-semibold mb-1">{title}</h3>
-        <p className="text-sm opacity-90">{desc}</p>
+    <div className="p-4">
+      <h2 className="text-2xl font-semibold text-indigo-900 mb-6">
+        Mentor Reports
+      </h2>
+
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-3 mb-6 border-b border-indigo-200">
+        {["Pending", "Verified", "All"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab);
+              navigate(`?tab=${tab}`);
+            }}
+            className={`px-5 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === tab
+                ? "bg-indigo-600 text-white shadow"
+                : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
-      <button
-        onClick={action}
-        className="mt-4 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-md transition"
-      >
-        Open
-      </button>
-    </motion.div>
-  );
-}
 
-/* 🔹 Reusable SummaryCard Component */
-function SummaryCard({ label, value, color }) {
-  return (
-    <div className="flex flex-col items-center bg-gradient-to-b from-indigo-50 to-white p-6 rounded-xl border border-indigo-100 shadow-sm">
-      <p className="text-gray-600 text-sm mb-2">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      {/* Table */}
+      <div className="overflow-x-auto bg-white shadow rounded-xl border border-gray-200">
+        <table className="min-w-full text-sm text-gray-700">
+          <thead className="bg-indigo-600 text-white">
+            <tr>
+              <th className="px-3 py-2 text-left">Student</th>
+              <th className="px-3 py-2 text-left">Date</th>
+              <th className="px-3 py-2 text-left">Activity</th>
+              <th className="px-3 py-2 text-left">Hours</th>
+              <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2 text-left">Mentor Comment</th>
+              <th className="px-3 py-2 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredLogs.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="text-center py-4 text-gray-500">
+                  No logs found for this category.
+                </td>
+              </tr>
+            ) : (
+              filteredLogs.map((log, i) => (
+                <tr
+                  key={log._id || i}
+                  className={`transition ${
+                    log.status === "Verified"
+                      ? "bg-green-50 hover:bg-green-100"
+                      : log.status === "Reviewed"
+                      ? "bg-blue-50 hover:bg-blue-100"
+                      : "bg-yellow-50 hover:bg-yellow-100"
+                  }`}
+                >
+                  <td className="px-3 py-2">{log.studentId || "—"}</td>
+                  <td className="px-3 py-2">
+                    {new Date(log.date).toLocaleDateString()}
+                  </td>
+                  <td className="px-3 py-2">{log.activity}</td>
+                  <td className="px-3 py-2">{log.totalHours ?? "-"}</td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        log.status === "Verified"
+                          ? "bg-green-100 text-green-700"
+                          : log.status === "Reviewed"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {log.status}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-gray-600">
+                    {log.mentorComment ? (
+                      log.mentorComment.slice(0, 50) + "…"
+                    ) : (
+                      <span className="italic text-gray-400">
+                        Pending mentor feedback
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    <button
+                      onClick={() => navigate(`/mentor/reports/${log._id}`)}
+                      className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                    >
+                      {log.status === "Pending" ? "Verify" : "View"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
