@@ -29,3 +29,12 @@ mysqldump -u root -p --no-data practicum > schema.sql
 
 
 Mongodb has logpapers 
+
+4.  Users
+
+# Prisma Seeding
+
+Run this command to insert the default Super Admin (Tutor):
+
+The credentials are stored in `.env` (`SUPERADMIN_EMAIL` and `SUPERADMIN_PASSWORD`).
+
