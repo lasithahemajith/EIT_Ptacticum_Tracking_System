@@ -52,11 +52,38 @@ export const createLogPaper = async (req, res) => {
   }
 };
 
-// ✅ GET Logs for Current Student
+// ✅ GET Logs for Current User (role-based)
 export const getMyLogPapers = async (req, res) => {
   try {
-    const logs = await LogPaper.find({ studentId: req.user.id }).sort({ date: -1 });
-    res.json(logs);
+    const role = req.user.role;
+
+    // 🧑‍🎓 Student → only their own logs
+    if (role === "Student") {
+      const logs = await LogPaper.find({ studentId: req.user.id }).sort({ date: -1 });
+      return res.json(logs);
+    }
+
+    // 👨‍🏫 Tutor/Admin → all logs
+    if (role === "Tutor" || role === "Admin") {
+      const logs = await LogPaper.find().sort({ date: -1 });
+      return res.json(logs);
+    }
+
+    // 👨‍💼 Mentor → only assigned students
+    if (role === "Mentor") {
+      const mentorId = req.user.id;
+      const mappings = await prisma.mentorStudentMap.findMany({
+        where: { mentorId },
+        select: { studentId: true },
+      });
+      const studentIds = mappings.map((m) => m.studentId);
+      if (studentIds.length === 0) return res.json([]);
+
+      const logs = await LogPaper.find({ studentId: { $in: studentIds } }).sort({ date: -1 });
+      return res.json(logs);
+    }
+
+    return res.status(403).json({ error: "Unauthorized access" });
   } catch (err) {
     console.error("❌ getMyLogPapers error:", err);
     res.status(500).json({ error: err.message });
@@ -127,9 +154,13 @@ export const addTutorFeedback = async (req, res) => {
    GENERAL ACCESS
    ========================================================= */
 
-// ✅ GET ALL Logs (for Tutors/Admin)
+// ✅ GET ALL Logs (Tutor/Admin)
 export const getAllLogs = async (req, res) => {
   try {
+    if (req.user.role !== "Tutor" && req.user.role !== "Admin") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
     const logs = await LogPaper.find().sort({ date: -1 });
     res.json(logs);
   } catch (err) {
@@ -139,10 +170,9 @@ export const getAllLogs = async (req, res) => {
 };
 
 /* =========================================================
-   MENTOR REPORTS (Hybrid: Prisma + Mongo)
+   MENTOR REPORTS
    ========================================================= */
 
-// ✅ Get logs for assigned students of a mentor
 export const getMentorLogs = async (req, res) => {
   try {
     if (req.user.role !== "Mentor") {
@@ -151,18 +181,14 @@ export const getMentorLogs = async (req, res) => {
 
     const mentorId = req.user.id;
 
-    // 1️⃣ Get assigned student IDs from MySQL (Prisma)
     const mappings = await prisma.mentorStudentMap.findMany({
       where: { mentorId },
       select: { studentId: true },
     });
 
     const studentIds = mappings.map((m) => m.studentId);
-    if (studentIds.length === 0) {
-      return res.json([]);
-    }
+    if (studentIds.length === 0) return res.json([]);
 
-    // 2️⃣ Fetch logs from MongoDB (for those students)
     const logs = await LogPaper.find({ studentId: { $in: studentIds } })
       .sort({ date: -1 })
       .lean();
@@ -174,17 +200,12 @@ export const getMentorLogs = async (req, res) => {
   }
 };
 
-
+// ✅ Single Log by ID
 export const getLogPaperById = async (req, res) => {
   try {
     const { id } = req.params;
-
     const log = await LogPaper.findById(id);
-
-    if (!log) {
-      return res.status(404).json({ error: "Log not found" });
-    }
-
+    if (!log) return res.status(404).json({ error: "Log not found" });
     res.json(log);
   } catch (err) {
     console.error("❌ getLogPaperById error:", err);

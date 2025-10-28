@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
-import { motion } from "framer-motion";
-import { FileText, Clock, MessageCircle, Calendar, Loader2 } from "lucide-react";
+import { Loader2, Calendar, Clock, FileText, Filter } from "lucide-react";
 
 export default function LogPaperList() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
+  const navigate = useNavigate();
+
   const [logs, setLogs] = useState([]);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // 🔹 Fetch student's logs
   useEffect(() => {
     const fetchLogs = async () => {
       try {
@@ -17,15 +22,22 @@ export default function LogPaperList() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLogs(res.data || []);
+        setFilteredLogs(res.data || []);
       } catch (err) {
-        console.error(err);
-        setError("Failed to fetch log papers. Please try again.");
+        console.error("Error fetching logs:", err);
+        setError("Failed to load logs. Please try again.");
       } finally {
         setLoading(false);
       }
     };
     fetchLogs();
   }, [token]);
+
+  // 🔹 Apply status filter
+  useEffect(() => {
+    if (statusFilter === "All") setFilteredLogs(logs);
+    else setFilteredLogs(logs.filter((log) => log.status === statusFilter));
+  }, [statusFilter, logs]);
 
   if (loading) {
     return (
@@ -44,81 +56,101 @@ export default function LogPaperList() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-white p-8">
-      <motion.h2
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="text-3xl font-semibold text-indigo-800 mb-8"
-      >
-        My Practicum Logs
-      </motion.h2>
+    <div className="p-6">
+      {/* 🔹 Header + Filter */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <h2 className="text-xl font-semibold text-indigo-900">
+          My Practicum Logs
+        </h2>
 
-      {logs.length === 0 ? (
-        <div className="text-center text-gray-500">No logs found.</div>
+        <div className="flex items-center gap-3">
+          <Filter className="text-gray-500" size={18} />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="All">All Logs</option>
+            <option value="Pending">Pending</option>
+            <option value="Verified">Verified</option>
+            <option value="Reviewed">Reviewed</option>
+          </select>
+        </div>
+      </div>
+
+      {/* 🔹 Empty State */}
+      {!filteredLogs.length ? (
+        <div className="text-center text-gray-600 mt-20">
+          <FileText className="mx-auto mb-3 text-gray-400" size={40} />
+          <p>No {statusFilter !== "All" ? statusFilter.toLowerCase() : ""} logs found.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse bg-white rounded-2xl shadow-md overflow-hidden">
-            <thead className="bg-indigo-600 text-white text-sm uppercase tracking-wide">
-              <tr>
-                <th className="p-3 text-left">Date</th>
-                <th className="p-3 text-left">Activity</th>
-                <th className="p-3 text-left">Hours</th>
-                <th className="p-3 text-left">Description</th>
-                <th className="p-3 text-left">Mentor Comments</th>
-                <th className="p-3 text-left">Tutor Feedback</th>
-                <th className="p-3 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map((log, index) => (
-                <motion.tr
-                  key={log._id || index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="border-b border-gray-200 hover:bg-indigo-50/50 transition"
-                >
-                  <td className="p-3 text-sm text-gray-700 flex items-center gap-2">
-                    <Calendar size={16} className="text-indigo-500" />
+        <div className="grid gap-4 md:grid-cols-2">
+          {filteredLogs.map((log) => (
+            <div
+              key={log._id}
+              onClick={() => navigate(`/student/logpapers/${log._id}`)}
+              className="cursor-pointer bg-white p-5 rounded-xl shadow hover:shadow-lg transition duration-200"
+            >
+              {/* Top Section */}
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-indigo-700 mb-1">
+                    {log.activity || "Untitled Activity"}
+                  </h3>
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <Calendar size={16} />
                     {new Date(log.date).toLocaleDateString()}
-                  </td>
-                  <td className="p-3 text-sm font-medium text-gray-800 flex items-center gap-2">
-                    <FileText size={16} className="text-indigo-500" />
-                    {log.activity}
-                  </td>
-                  <td className="p-3 text-sm text-gray-700 flex items-center gap-2">
-                    <Clock size={16} className="text-blue-500" />
-                    {log.hours}
-                  </td>
-                  <td className="p-3 text-sm text-gray-600">{log.description}</td>
-                  <td className="p-3 text-sm text-gray-600 italic">
-                    {log.mentorComments || <span className="text-gray-400">—</span>}
-                  </td>
-                  <td className="p-3 text-sm text-gray-600 italic">
-                    {log.tutorFeedback || <span className="text-gray-400">—</span>}
-                  </td>
-                  <td className="p-3 text-sm font-semibold">
-                    <StatusBadge verified={log.verified} />
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
+                  </p>
+                  <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                    <Clock size={16} />
+                    {log.totalHours ?? log.hours ?? "-"} hours
+                  </p>
+                </div>
+
+                {/* Status Badge */}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    log.status === "Verified"
+                      ? "text-green-700 bg-green-100"
+                      : log.status === "Pending"
+                      ? "text-yellow-700 bg-yellow-100"
+                      : "text-blue-700 bg-blue-100"
+                  }`}
+                >
+                  {log.status || "Pending"}
+                </span>
+              </div>
+
+              {/* 🔹 Student’s Short Description */}
+              {log.description && (
+                <p className="mt-3 text-sm text-gray-700 line-clamp-3">
+                  {log.description.slice(0, 100)}
+                  {log.description.length > 100 && "..."}
+                </p>
+              )}
+
+              {/* Divider and Mentor Comment */}
+              {log.mentorComment && (
+                <>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <p className="text-sm text-gray-700">
+                    <strong>Mentor:</strong> {log.mentorComment.slice(0, 80)}
+                    {log.mentorComment.length > 80 && "..."}
+                  </p>
+                </>
+              )}
+
+              {/* ✅ Lock message for verified logs */}
+              {log.status === "Verified" && (
+                <p className="text-xs text-green-700 mt-2">
+                  This log has been verified by your mentor and is locked for editing.
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
-  );
-}
-
-function StatusBadge({ verified }) {
-  return verified ? (
-    <span className="text-green-600 bg-green-100 px-3 py-1 rounded-full text-xs">
-      Verified
-    </span>
-  ) : (
-    <span className="text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full text-xs">
-      Pending
-    </span>
   );
 }

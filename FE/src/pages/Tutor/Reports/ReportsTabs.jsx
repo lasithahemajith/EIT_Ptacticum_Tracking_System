@@ -1,7 +1,24 @@
 import React, { useState } from "react";
+import { Outlet, useParams, useLocation } from "react-router-dom";
 import HistoryLogs from "./HistoryLogs";
 
+/**
+ * When the URL matches /tutor/reports/:id we render the Outlet (TutorFeedback)
+ * and hide the tabs. Otherwise, show the tabbed history dashboard.
+ */
 export default function ReportsTabs() {
+  const { id } = useParams();
+  const location = useLocation();
+  const isDetails = /\/tutor\/reports\/[^/]+$/.test(location.pathname);
+
+  if (isDetails && id) {
+    return (
+      <div className="p-4">
+        <Outlet />
+      </div>
+    );
+  }
+
   const tabs = [
     { key: "history", label: "History Logs", component: <HistoryLogs /> },
     { key: "summary", label: "Summary Reports", component: <div>Coming soon…</div> },

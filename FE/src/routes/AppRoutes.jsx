@@ -10,6 +10,7 @@ import Login from "@/pages/Auth/Login";
 // STUDENT
 import StudentHome from "@/pages/Student/Home/StudentHome";
 import LogPaperTabs from "@/pages/Student/LogPaper/LogPaperTabs";
+import LogPaperDetails from "@/pages/Student/LogPaper/LogPaperDetails";
 
 // MENTOR
 import MentorHome from "@/pages/Mentor/Home/MentorHome";
@@ -21,6 +22,7 @@ import MentorLogDetails from "@/pages/mentor/Reports/MentorLogDetails";
 import TutorHome from "@/pages/Tutor/Home/TutorHome";
 import UserTabs from "@/pages/Tutor/Users/UserTabs";
 import ReportsTabs from "@/pages/Tutor/Reports/ReportsTabs";
+import TutorFeedback from "@/pages/Tutor/Reports/TutorFeedback";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { token, user, loading } = useAuth();
@@ -58,6 +60,7 @@ export default function AppRoutes() {
         {/* ---------- STUDENT ---------- */}
         <Route path="student/home" element={<StudentHome />} />
         <Route path="student/logpapers" element={<LogPaperTabs />} />
+        <Route path="student/logpapers/:id" element={<LogPaperDetails />} />
 
         {/* ---------- MENTOR ---------- */}
         <Route
@@ -84,7 +87,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
         <Route
           path="mentor/reports/:id"
           element={
@@ -94,7 +96,7 @@ export default function AppRoutes() {
           }
         />
 
-        {/* ---------- TUTOR ---------- */}
+        {/* ---------- TUTOR (nested reports + feedback details) ---------- */}
         <Route
           path="tutor/home"
           element={
@@ -118,7 +120,17 @@ export default function AppRoutes() {
               <ReportsTabs />
             </ProtectedRoute>
           }
-        />
+        >
+          {/* Child route renders inside <ReportsTabs /> via <Outlet /> */}
+          <Route
+            path=":id"
+            element={
+              <ProtectedRoute allowedRoles={["Tutor"]}>
+                <TutorFeedback />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
       </Route>
 
       {/* Fallback */}
