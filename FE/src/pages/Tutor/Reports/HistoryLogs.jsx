@@ -93,6 +93,8 @@ export default function HistoryLogs() {
                   className={`transition ${
                     log.status === "Verified"
                       ? "bg-green-50 hover:bg-green-100"
+                      : log.status === "Reviewed"
+                      ? "bg-blue-50 hover:bg-blue-100"
                       : "odd:bg-white even:bg-gray-50 hover:bg-indigo-50"
                   }`}
                 >

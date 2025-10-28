@@ -1,124 +1,188 @@
 import { motion } from "framer-motion";
-import { ClipboardList, FileText, Clock, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import {
+  ClipboardList,
+  FileText,
+  Users,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import Sidebar from "@/components/Sidebar";
+import API from "@/api/axios";
+import { useEffect, useState } from "react";
 
-export default function Home() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+export default function TutorHome() {
+  const { user } = useAuth();
+
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalMentors: 0,
+    totalLogs: 0,
+    pendingVerifications: 0,
+    approvedLogs: 0,
+    feedbacks: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const { data } = await API.get("/tutor/dashboard-stats");
+        if (active) {
+          setStats({
+            totalStudents: data.totalStudents,
+            totalMentors: data.totalMentors,
+            totalLogs: data.totalLogs,
+            pendingVerifications: data.pendingLogs,
+            approvedLogs: data.verifiedLogs,
+            feedbacks:
+              (data.tutorFeedbacks || 0) + (data.mentorFeedbacks || 0),
+          });
+        }
+      } catch (err) {
+        console.error("Dashboard stats fetch failed:", err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100">
-      
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-purple-100 to-blue-50">
+      <div className="flex-1 flex flex-col p-10 overflow-y-auto">
+        {/* Header */}
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-3xl font-semibold text-indigo-900 mb-2"
+        >
+          Welcome back, {user?.name || "Tutor"}
+        </motion.h2>
+        <p className="text-gray-600 mb-10">
+          Here’s an overview of your practicum supervision and student
+          progress.
+        </p>
 
-      {/* ✅ Main Content Area */}
-      <div className="flex-1 flex flex-col">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10">
+          <SummaryCard
+            label="Students"
+            value={stats.totalStudents}
+            icon={<Users />}
+            color="text-indigo-600"
+          />
+          <SummaryCard
+            label="Mentors"
+            value={stats.totalMentors}
+            icon={<CheckCircle />}
+            color="text-emerald-600"
+          />
+          <SummaryCard
+            label="Logs Submitted"
+            value={stats.totalLogs}
+            icon={<ClipboardList />}
+            color="text-blue-600"
+          />
+          <SummaryCard
+            label="Verified Logs by Mentor"
+            value={stats.approvedLogs}
+            icon={<FileText />}
+            color="text-green-600"
+          />
+          <SummaryCard
+            label="Pending Verifications from Mentor"
+            value={stats.pendingVerifications}
+            icon={<AlertTriangle />}
+            color="text-yellow-600"
+          />
+          <SummaryCard
+            label="Feedbacks Given by Tutor"
+            value={stats.feedbacks}
+            icon={<Clock />}
+            color="text-purple-600"
+          />
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 p-10 overflow-y-auto">
-          <motion.h2
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-semibold text-indigo-900 mb-8"
-          >
-            Practicum Dashboard
-          </motion.h2>
+        {/* Insights Section */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-14 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
+        >
+          <h3 className="text-xl font-semibold text-indigo-800 mb-4">
+            Practicum Insights
+          </h3>
 
-          {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <DashboardCard
-              icon={<ClipboardList size={28} />}
-              title="Daily Logs"
-              desc="View and manage your practicum log entries."
-              color="from-blue-500 to-indigo-600"
-              action={() => navigate("/logpapers")}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <InsightBox
+              title="Most Active Students"
+              items={[
+                "Jane Doe — 18 logs",
+                "Michael Lee — 16 logs",
+                "Sara Khan — 15 logs",
+              ]}
             />
-            <DashboardCard
-              icon={<Clock size={28} />}
-              title="Add Log Entry"
-              desc="Record your daily activities, hours, and reflections."
-              color="from-purple-500 to-pink-500"
-              action={() => navigate("/logpapers/add")}
-            />
-            <DashboardCard
-              icon={<FileText size={28} />}
-              title="Reports"
-              desc="Generate summaries and performance analytics."
-              color="from-green-500 to-emerald-600"
-              action={() => navigate("#")}
+            <InsightBox
+              title="Mentors with Pending Reviews"
+              items={[
+                "John Smith (5 pending)",
+                "Emily Brown (3 pending)",
+                "Robert Taylor (2 pending)",
+              ]}
             />
           </div>
-
-          {/* Summary Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-12 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
-          >
-            <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-              Summary Statistics
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <SummaryCard
-                label="Total Logs Submitted"
-                value="14"
-                color="text-blue-600"
-              />
-              <SummaryCard
-                label="Hours Completed"
-                value="72"
-                color="text-green-600"
-              />
-              <SummaryCard
-                label="Mentor Feedbacks"
-                value="5"
-                color="text-purple-600"
-              />
-            </div>
-          </motion.section>
-        </main>
+        </motion.section>
 
         {/* Footer */}
-        <footer className="text-center py-4 text-indigo-600 text-sm opacity-80">
-          © 2025 EIT Practicum Tracker
+        <footer className="text-center py-6 text-indigo-600 text-sm opacity-80 mt-12">
+          © 2025 EIT Practicum Tracker | Tutor Home
         </footer>
       </div>
     </div>
   );
 }
 
-/* 🔹 Reusable DashboardCard Component */
-function DashboardCard({ icon, title, desc, color, action }) {
+/* 🔹 SummaryCard Component */
+function SummaryCard({ label, value, icon, color }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.03 }}
-      transition={{ duration: 0.2 }}
-      className={`bg-gradient-to-r ${color} text-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-2xl transition`}
+      whileHover={{ y: -4 }}
+      className="flex flex-col items-center bg-white p-5 rounded-xl shadow-sm border border-indigo-100"
     >
-      <div>
-        <div className="mb-3">{icon}</div>
-        <h3 className="text-xl font-semibold mb-1">{title}</h3>
-        <p className="text-sm opacity-90">{desc}</p>
-      </div>
-      <button
-        onClick={action}
-        className="mt-4 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-md transition"
-      >
-        Open
-      </button>
+      <div className={`mb-2 ${color}`}>{icon}</div>
+      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      <p className="text-sm text-gray-600 mt-1">{label}</p>
     </motion.div>
   );
 }
 
-/* 🔹 Reusable SummaryCard Component */
-function SummaryCard({ label, value, color }) {
+/* 🔹 InsightBox Component */
+function InsightBox({ title, items }) {
   return (
-    <div className="flex flex-col items-center bg-gradient-to-b from-indigo-50 to-white p-6 rounded-xl border border-indigo-100 shadow-sm">
-      <p className="text-gray-600 text-sm mb-2">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+    <div className="bg-gradient-to-b from-indigo-50 to-white p-6 rounded-xl border border-indigo-100 shadow-sm">
+      <h4 className="font-semibold text-indigo-700 mb-3">{title}</h4>
+      <ul className="space-y-2 text-sm text-gray-700">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-center gap-2">
+            <div className="h-2 w-2 bg-indigo-400 rounded-full"></div>
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
