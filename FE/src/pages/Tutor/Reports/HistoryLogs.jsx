@@ -1,108 +1,137 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import API from "@/api/axios";
+import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HistoryLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
+  const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const navigate = useNavigate();
+  const { token } = useAuth();
 
   useEffect(() => {
-    let active = true;
     (async () => {
       try {
-        const { data } = await API.get("/logpaper/all");
-        if (active) setLogs(Array.isArray(data) ? data : []);
+        const res = await API.get("/logpaper/all", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLogs(res.data || []);
       } catch (err) {
         console.error("Error loading logs:", err);
+        setError("Failed to load logs.");
       } finally {
-        if (active) setLoading(false);
+        setLoading(false);
       }
     })();
-    return () => {
-      active = false;
-    };
-  }, []);
+  }, [token]);
 
-  const filtered = useMemo(() => {
-    if (!query.trim()) return logs;
-    const q = query.toLowerCase();
-    return logs.filter(
-      (l) =>
-        (l.activity || "").toLowerCase().includes(q) ||
-        (l.description || "").toLowerCase().includes(q) ||
-        String(l.studentId || "").includes(q) ||
-        (l.status || "").toLowerCase().includes(q)
+  const filtered = logs.filter((log) =>
+    statusFilter === "All" ? true : log.status === statusFilter
+  );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[70vh]">
+        <Loader2 className="animate-spin text-indigo-600" size={36} />
+      </div>
     );
-  }, [logs, query]);
+  }
+
+  if (error) return <div className="text-center text-red-600 p-6">{error}</div>;
 
   return (
-    <div>
-      <div className="flex items-center justify-between gap-2 flex-wrap mb-4">
-        <input
-          type="text"
-          placeholder="Search by activity, description, student ID, or status..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-80 max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        <div className="text-sm text-slate-600">
-          {loading ? "Loading logs..." : `${filtered.length} record(s)`}
-        </div>
+    <div className="p-4">
+      <h2 className="text-2xl font-semibold text-indigo-900 mb-4">
+        Tutor Log History
+      </h2>
+
+      {/* Filters */}
+      <div className="flex justify-between items-center mb-4">
+        <label className="text-sm font-medium text-gray-700">
+          Filter by Status:
+        </label>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Verified">Verified</option>
+          <option value="Reviewed">Reviewed</option>
+        </select>
       </div>
 
-      <div className="overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-sm">
-        <table className="min-w-full text-sm">
-          <thead className="bg-slate-50">
+      {/* Table */}
+      <div className="overflow-x-auto bg-white shadow rounded-xl border border-gray-200">
+        <table className="min-w-full text-sm text-gray-700">
+          <thead className="bg-indigo-600 text-white">
             <tr>
-              <th className="px-3 py-2 border-b text-left">Student ID</th>
-              <th className="px-3 py-2 border-b text-left">Date</th>
-              <th className="px-3 py-2 border-b text-left">Hours</th>
-              <th className="px-3 py-2 border-b text-left">Activity</th>
-              <th className="px-3 py-2 border-b text-left">Description</th>
-              <th className="px-3 py-2 border-b text-left">Status</th>
-              <th className="px-3 py-2 border-b text-left">Created</th>
+              <th className="px-3 py-2 text-left">Student</th>
+              <th className="px-3 py-2 text-left">Date</th>
+              <th className="px-3 py-2 text-left">Activity</th>
+              <th className="px-3 py-2 text-left">Hours</th>
+              <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2 text-left">Mentor Comment</th>
+              <th className="px-3 py-2 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {filtered.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center py-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="text-center py-4 text-slate-500">
+                <td colSpan="7" className="text-center py-4 text-gray-500">
                   No logs found.
                 </td>
               </tr>
             ) : (
-              filtered.map((r) => (
-                <tr key={r._id} className="odd:bg-white even:bg-slate-50">
-                  <td className="px-3 py-2 border-b">{r.studentId ?? "-"}</td>
-                  <td className="px-3 py-2 border-b">
-                    {r.date ? new Date(r.date).toLocaleDateString() : "-"}
+              filtered.map((log, i) => (
+                <tr
+                  key={log._id || i}
+                  className={`transition ${
+                    log.status === "Verified"
+                      ? "bg-green-50 hover:bg-green-100"
+                      : "odd:bg-white even:bg-gray-50 hover:bg-indigo-50"
+                  }`}
+                >
+                  <td className="px-3 py-2">{log.studentId || "—"}</td>
+                  <td className="px-3 py-2">
+                    {new Date(log.date).toLocaleDateString()}
                   </td>
-                  <td className="px-3 py-2 border-b">{r.totalHours ?? "-"}</td>
-                  <td className="px-3 py-2 border-b">{r.activity ?? "-"}</td>
-                  <td className="px-3 py-2 border-b max-w-[400px]">
-                    <div className="line-clamp-2">{r.description ?? "-"}</div>
-                  </td>
-                  <td className="px-3 py-2 border-b">
+                  <td className="px-3 py-2">{log.activity}</td>
+                  <td className="px-3 py-2">{log.totalHours ?? "-"}</td>
+                  <td className="px-3 py-2">
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs border ${
-                        r.status === "Verified"
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : r.status === "Reviewed"
-                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                          : "bg-slate-50 text-slate-700 border-slate-200"
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        log.status === "Verified"
+                          ? "bg-green-100 text-green-700"
+                          : log.status === "Reviewed"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
-                      {r.status ?? "Pending"}
+                      {log.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 border-b">
-                    {r.createdAt ? new Date(r.createdAt).toLocaleString() : "-"}
+                  <td className="px-3 py-2 text-gray-600">
+                    {log.mentorComment ? (
+                      log.mentorComment.slice(0, 50) + "…"
+                    ) : (
+                      <span className="italic text-gray-400">
+                        Pending mentor feedback
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/tutor/reports/${log._id}`)}
+                      className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                    >
+                      {log.status === "Verified" ? "Review Now" : "View"}
+                    </button>
                   </td>
                 </tr>
               ))
