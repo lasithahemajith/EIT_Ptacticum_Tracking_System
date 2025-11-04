@@ -10,6 +10,7 @@ import path from "path";  // ✅ Add this line
 import mentorFeedbackRoutes from "./routes/mentorFeedbackRoutes.js";
 import tutorFeedbackRoutes from "./routes/tutorFeedbackRoutes.js";
 import tutorDashboardRoutes from "./routes/tutorDashboardRoutes.js";
+import exportRoutes from "./routes/exportRoutes.js";
 
 dotenv.config(); // ✅ must come before connectMongo()
 
@@ -34,6 +35,9 @@ app.use("/mentor-feedback", mentorFeedbackRoutes);
 app.use("/api/tutor-feedback", tutorFeedbackRoutes);
 
 app.use("/tutor", tutorDashboardRoutes);
+
+app.use("/api/export/logs", exportRoutes);
+
 
 app.get("/", (req, res) => {
   res.json({ message: "Practicum Tracker API Running" });
