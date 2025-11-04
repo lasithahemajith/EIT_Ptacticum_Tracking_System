@@ -7,19 +7,30 @@ export default function LogPaperDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [log, setLog] = useState(null);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
+        // Fetch log
         const { data } = await API.get(`/logpaper/${id}`);
+        if (!active) return;
         setLog(data);
+
+        // Fetch all tutor feedbacks (same endpoint used in TutorFeedback.jsx)
+        const fbRes = await API.get(`/api/tutor-feedback/${id}`);
+        if (active) setFeedbacks(Array.isArray(fbRes.data) ? fbRes.data : []);
       } catch (err) {
-        console.error("Error fetching log:", err);
+        console.error("Error fetching log or tutor feedbacks:", err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     })();
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   if (loading) return <div className="p-6">Loading...</div>;
@@ -96,12 +107,29 @@ export default function LogPaperDetails() {
         )}
       </div>
 
-      {/* Tutor feedback */}
+      {/* Tutor feedbacks */}
       <div className="bg-white border rounded-xl shadow p-6">
         <h3 className="font-semibold mb-2 text-indigo-700">
           Tutor Feedback
         </h3>
-        {log.tutorFeedback ? (
+
+        {feedbacks && feedbacks.length > 0 ? (
+          <ul className="space-y-3">
+            {feedbacks.map((fb, i) => (
+              <li
+                key={fb._id || i}
+                className="p-3 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700"
+              >
+                <p className="whitespace-pre-line">{fb.feedback}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  — {fb.tutorName ? `Reviewed by ${fb.tutorName} ` : ""}
+                  on {fb.createdAt ? new Date(fb.createdAt).toLocaleString() : "-"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : log.tutorFeedback ? (
+          // Backward compatibility: single field on the log
           <p className="text-sm text-gray-700 whitespace-pre-line">
             {log.tutorFeedback}
           </p>
