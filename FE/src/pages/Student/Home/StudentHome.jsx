@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ClipboardList, Clock, History } from "lucide-react";
+import { ClipboardList, Clock, UserCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
@@ -22,9 +22,8 @@ export default function StudentHome() {
           </motion.h2>
           <p className="text-gray-600 mb-10 max-w-2xl">
             This is your Practicum Tracker Dashboard. You can record your daily
-            practicum activities, review your previous submissions, and monitor
-            your overall progress. Keep your logs up-to-date to ensure accurate
-            tracking of your practicum hours.
+            practicum activities, review your submissions, and monitor
+            your progress. Keep your logs and attendance up-to-date.
           </p>
 
           {/* Student Actions */}
@@ -36,12 +35,13 @@ export default function StudentHome() {
               color="from-purple-500 to-pink-500"
               action={() => navigate("/student/logpapers")}
             />
+
             <DashboardCard
-              icon={<History size={28} />}
-              title="View Log History"
-              desc="Check your submitted logs, their mentor feedback, and verification status."
+              icon={<UserCheck size={28} />}
+              title="Add Attendance"
+              desc="Mark your attendance for today — Class or Practicum."
               color="from-blue-500 to-indigo-600"
-              action={() => navigate("/student/logpapers")}
+              action={() => navigate("/student/attendance")}
             />
           </div>
 

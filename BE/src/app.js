@@ -11,6 +11,8 @@ import mentorFeedbackRoutes from "./routes/mentorFeedbackRoutes.js";
 import tutorFeedbackRoutes from "./routes/tutorFeedbackRoutes.js";
 import tutorDashboardRoutes from "./routes/tutorDashboardRoutes.js";
 import exportRoutes from "./routes/exportRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
+
 
 dotenv.config(); // ✅ must come before connectMongo()
 
@@ -37,6 +39,8 @@ app.use("/api/tutor-feedback", tutorFeedbackRoutes);
 app.use("/tutor", tutorDashboardRoutes);
 
 app.use("/api/export/logs", exportRoutes);
+
+app.use("/attendance", attendanceRoutes);
 
 
 app.get("/", (req, res) => {

@@ -20,6 +20,8 @@ model User {
   password  String
   role      Role     @default(Student)
   createdAt DateTime @default(now())
+  attendances Attendance[]
+
 
   // Relations for mentor-student mapping
   mentorMappings  MentorStudentMap[] @relation("MentorRelation")
@@ -37,5 +39,19 @@ model MentorStudentMap {
 
   @@unique([mentorId, studentId])
   @@index([mentorId])
+  @@index([studentId])
+}
+
+
+model Attendance {
+  id          Int       @id @default(autoincrement())
+  studentId   Int
+  type        String     // "Class" or "Practicum"
+  attended    String     // "Yes" or "No"
+  reason      String?    // Null if attended = Yes
+  createdAt   DateTime   @default(now())
+
+  student     User       @relation(fields: [studentId], references: [id])
+
   @@index([studentId])
 }

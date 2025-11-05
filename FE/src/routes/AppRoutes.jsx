@@ -11,6 +11,7 @@ import Login from "@/pages/Auth/Login";
 import StudentHome from "@/pages/Student/Home/StudentHome";
 import LogPaperTabs from "@/pages/Student/LogPaper/LogPaperTabs";
 import LogPaperDetails from "@/pages/Student/LogPaper/LogPaperDetails";
+import AttendanceTabs from "@/pages/Student/Attendance/AttendanceTabs";
 
 // MENTOR
 import MentorHome from "@/pages/Mentor/Home/MentorHome";
@@ -102,6 +103,10 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        
+        <Route path="/student/attendance" element={<AttendanceTabs />} />
+
+
 
         {/* ---------- MENTOR ROUTES ---------- */}
         <Route

@@ -5,6 +5,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   User,
   Users,
 } from "lucide-react";
@@ -16,6 +18,7 @@ export default function Sidebar() {
   const { user } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [openAttendance, setOpenAttendance] = useState(false);
 
   let navItems = [];
 
@@ -29,13 +32,13 @@ export default function Sidebar() {
     navItems = [
       { label: "Home", path: "/mentor/home", icon: <Home size={18} /> },
       { label: "Students", path: "/mentor/students", icon: <Users size={18} /> },
-    //   { label: "Logs", path: "/mentor/logs", icon: <ClipboardList size={18} /> },
-      { label: "Reports", path: "/mentor/reports", icon: <FileText size={18} /> }, // ✅ new
+      { label: "Reports", path: "/mentor/reports", icon: <FileText size={18} /> },
     ];
   } else if (user?.role === "Student") {
     navItems = [
       { label: "Home", path: "/student/home", icon: <Home size={18} /> },
       { label: "My Logs", path: "/student/logpapers", icon: <ClipboardList size={18} /> },
+      { label: "Attendance", path: "/student/attendance", icon: <ClipboardList size={18} /> },
     ];
   }
 
@@ -58,26 +61,81 @@ export default function Sidebar() {
       {/* Nav Items */}
       <nav className="flex flex-col flex-1 px-2 py-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-600 scrollbar-track-indigo-800">
         {navItems.map((item) => {
-          const isActive = location.pathname.startsWith(item.path);
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-indigo-100 hover:bg-indigo-700 hover:text-white"
-              }`}
-            >
-              <div
-                className={`p-1.5 rounded-md transition ${
-                  isActive ? "bg-white/20" : "bg-transparent group-hover:bg-white/10"
+          // Regular items
+          if (!item.subItems) {
+            const isActive = location.pathname.startsWith(item.path);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-indigo-100 hover:bg-indigo-700 hover:text-white"
                 }`}
               >
-                {item.icon}
-              </div>
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+                <div
+                  className={`p-1.5 rounded-md transition ${
+                    isActive ? "bg-white/20" : "bg-transparent group-hover:bg-white/10"
+                  }`}
+                >
+                  {item.icon}
+                </div>
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          }
+
+          // Submenu (Attendance)
+          const isAttendanceActive = item.subItems.some((sub) =>
+            location.pathname.startsWith(sub.path)
+          );
+
+          return (
+            <div key={item.label}>
+              <button
+                onClick={() => setOpenAttendance(!openAttendance)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  isAttendanceActive
+                    ? "bg-indigo-600 text-white"
+                    : "text-indigo-100 hover:bg-indigo-700 hover:text-white"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-1.5 rounded-md transition ${
+                      isAttendanceActive ? "bg-white/20" : "bg-transparent group-hover:bg-white/10"
+                    }`}
+                  >
+                    {item.icon}
+                  </div>
+                  {!collapsed && <span>{item.label}</span>}
+                </div>
+                {!collapsed && (openAttendance ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
+              </button>
+
+              {/* Sub-items */}
+              {openAttendance && !collapsed && (
+                <div className="ml-8 mt-1 space-y-1">
+                  {item.subItems.map((sub) => {
+                    const active = location.pathname === sub.path;
+                    return (
+                      <Link
+                        key={sub.path}
+                        to={sub.path}
+                        className={`block px-3 py-1.5 rounded-md text-sm ${
+                          active
+                            ? "bg-indigo-700 text-white"
+                            : "text-indigo-200 hover:bg-indigo-700 hover:text-white"
+                        }`}
+                      >
+                        {sub.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>
