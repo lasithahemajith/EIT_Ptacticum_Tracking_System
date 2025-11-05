@@ -56,3 +56,44 @@ export const getMyAttendance = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch attendance history" });
   }
 };
+
+// ✅ MENTOR: Get Assigned Students' Practicum Attendance
+export const getMentorAttendance = async (req, res) => {
+  try {
+    // Only mentors can access this
+    if (req.user.role !== "Mentor") {
+      return res.status(403).json({ error: "Access denied. Mentors only." });
+    }
+
+    const mentorId = req.user.id;
+
+    // 🔹 Get list of assigned students
+    const assigned = await prisma.mentorStudentMap.findMany({
+      where: { mentorId },
+      select: { studentId: true },
+    });
+    const studentIds = assigned.map((s) => s.studentId);
+
+    if (studentIds.length === 0)
+      return res.json({ message: "No students assigned." });
+
+    // 🔹 Get attendance (only for Practicum)
+    const records = await prisma.attendance.findMany({
+      where: {
+        studentId: { in: studentIds },
+        type: "Practicum",
+      },
+      include: {
+        student: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(records);
+  } catch (err) {
+    console.error("❌ getMentorAttendance error:", err);
+    res.status(500).json({ error: "Failed to fetch mentor attendance" });
+  }
+};

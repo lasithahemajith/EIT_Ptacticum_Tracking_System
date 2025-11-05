@@ -18,6 +18,7 @@ import MentorHome from "@/pages/Mentor/Home/MentorHome";
 import MentorStudents from "@/pages/Mentor/MentorStudents";
 import MentorReports from "@/pages/Mentor/Reports/MentorReports";
 import MentorLogDetails from "@/pages/Mentor/Reports/MentorLogDetails";
+import MentorAttendance from "@/pages/Mentor/MentorAttendance";
 
 // TUTOR
 import TutorHome from "@/pages/Tutor/Home/TutorHome";
@@ -141,6 +142,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="/mentor/attendance" element={<MentorAttendance />} />
 
         {/* ---------- TUTOR ROUTES ---------- */}
         <Route
