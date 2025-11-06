@@ -97,3 +97,26 @@ export const getMentorAttendance = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch mentor attendance" });
   }
 };
+
+// ✅ TUTOR: View All Attendance Records (Class + Practicum)
+export const getTutorAttendanceOverview = async (req, res) => {
+  try {
+    if (req.user.role !== "Tutor") {
+      return res.status(403).json({ error: "Access denied. Tutors only." });
+    }
+
+    const records = await prisma.attendance.findMany({
+      include: {
+        student: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(records);
+  } catch (err) {
+    console.error("❌ getTutorAttendanceOverview error:", err);
+    res.status(500).json({ error: "Failed to fetch attendance overview" });
+  }
+};

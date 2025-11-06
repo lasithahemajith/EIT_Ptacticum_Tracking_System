@@ -1,5 +1,5 @@
 import express from "express";
-import { addAttendance, getMyAttendance, getMentorAttendance } from "../controllers/attendanceController.js";
+import { addAttendance, getMyAttendance, getMentorAttendance, getTutorAttendanceOverview } from "../controllers/attendanceController.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -12,5 +12,6 @@ router.get("/my", verifyToken, getMyAttendance);
 
 router.get("/mentor", verifyToken, getMentorAttendance);
 
+router.get("/tutor", verifyToken, getTutorAttendanceOverview);
 
 export default router;
