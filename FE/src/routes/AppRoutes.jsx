@@ -25,6 +25,7 @@ import TutorHome from "@/pages/Tutor/Home/TutorHome";
 import UserTabs from "@/pages/Tutor/Users/UserTabs";
 import ReportsTabs from "@/pages/Tutor/Reports/ReportsTabs";
 import TutorFeedback from "@/pages/Tutor/Reports/TutorFeedback";
+import TutorDashboardTabs from "@/pages/Tutor/Dashboards/TutorDashboardTabs";
 
 /* -------------------------------------------------------------
    🔐 Protected Route Wrapper
@@ -178,6 +179,9 @@ export default function AppRoutes() {
             }
           />
         </Route>
+
+        <Route path="/tutor/dashboards" element={<TutorDashboardTabs />} />
+
       </Route>
 
       {/* ---------- FALLBACK ---------- */}

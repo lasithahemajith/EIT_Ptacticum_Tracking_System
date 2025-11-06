@@ -9,6 +9,7 @@ import {
   ChevronUp,
   User,
   Users,
+  BarChart3,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -27,6 +28,7 @@ export default function Sidebar() {
       { label: "Home", path: "/tutor/home", icon: <Home size={18} /> },
       { label: "Users", path: "/tutor/users", icon: <User size={18} /> },
       { label: "Reports", path: "/tutor/reports", icon: <FileText size={18} /> },
+      { label: "Dashboards", path: "/tutor/dashboards", icon: <BarChart3 size={18} /> },
     ];
   } else if (user?.role === "Mentor") {
     navItems = [

@@ -12,6 +12,7 @@ import tutorFeedbackRoutes from "./routes/tutorFeedbackRoutes.js";
 import tutorDashboardRoutes from "./routes/tutorDashboardRoutes.js";
 import exportRoutes from "./routes/exportRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
 dotenv.config(); // ✅ must come before connectMongo()
@@ -42,6 +43,7 @@ app.use("/api/export/logs", exportRoutes);
 
 app.use("/attendance", attendanceRoutes);
 
+app.use("/dashboard", dashboardRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Practicum Tracker API Running" });
