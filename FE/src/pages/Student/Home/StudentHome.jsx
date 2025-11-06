@@ -44,35 +44,6 @@ export default function StudentHome() {
               action={() => navigate("/student/attendance")}
             />
           </div>
-
-          {/* Summary Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
-          >
-            <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-              Practicum Summary
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <SummaryCard
-                label="Total Logs Submitted"
-                value="14"
-                color="text-indigo-600"
-              />
-              <SummaryCard
-                label="Total Hours Completed"
-                value="72"
-                color="text-green-600"
-              />
-              <SummaryCard
-                label="Mentor Feedbacks Received"
-                value="5"
-                color="text-purple-600"
-              />
-            </div>
-          </motion.section>
         </main>
 
         {/* Footer */}

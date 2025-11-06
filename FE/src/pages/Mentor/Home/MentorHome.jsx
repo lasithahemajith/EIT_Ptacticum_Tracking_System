@@ -110,37 +110,6 @@ export default function MentorHome() {
           />
         </div>
 
-        {/* Insights Section */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mt-6 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
-        >
-          <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-            Mentor Insights
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <InsightBox
-              title="Most Active Students"
-              items={[
-                "Jane Doe — 10 verified logs",
-                "Michael Lee — 8 verified logs",
-                "Sara Khan — 7 verified logs",
-              ]}
-            />
-            <InsightBox
-              title="Pending Student Logs"
-              items={[
-                "Emily Brown — 3 pending logs",
-                "Robert Taylor — 2 pending logs",
-                "Olivia Green — 1 pending log",
-              ]}
-            />
-          </div>
-        </motion.section>
-
         {/* Footer */}
         <footer className="text-center py-6 text-indigo-600 text-sm opacity-80 mt-12">
           © 2025 EIT Practicum Tracker | Mentor Dashboard
