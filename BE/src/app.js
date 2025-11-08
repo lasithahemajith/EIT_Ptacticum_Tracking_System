@@ -14,7 +14,7 @@ import exportRoutes from "./routes/exportRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
-
+await new Promise(r => setTimeout(r, 5000)); // wait 5s for MySQL & Mongo
 dotenv.config(); // ✅ must come before connectMongo()
 
 const app = express();

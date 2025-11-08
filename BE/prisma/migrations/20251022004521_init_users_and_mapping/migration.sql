@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `user` MODIFY `role` ENUM('Student', 'Mentor', 'Tutor') NOT NULL DEFAULT 'Student';
+ALTER TABLE `User` MODIFY `role` ENUM('Student', 'Mentor', 'Tutor') NOT NULL DEFAULT 'Student';
 
 -- CreateTable
 CREATE TABLE `MentorStudentMap` (
