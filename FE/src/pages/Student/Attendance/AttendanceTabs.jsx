@@ -6,26 +6,26 @@ export default function AttendanceTabs() {
   const [activeTab, setActiveTab] = useState("add");
 
   return (
-    <div className="min-h-[80vh] bg-gradient-to-br from-indigo-50 via-white to-indigo-100 flex justify-center py-8">
-      <div className="w-full max-w-3xl bg-white shadow-xl rounded-xl border border-indigo-100">
+    <div className="min-h-[80vh] bg-gradient-to-br from-indigo-100 via-white to-indigo-50 flex justify-center py-10">
+      <div className="w-full max-w-4xl bg-white shadow-lg rounded-2xl border border-indigo-100 overflow-hidden">
         {/* Tab Headers */}
-        <div className="flex border-b border-indigo-200">
+        <div className="flex justify-center bg-indigo-50 border-b border-indigo-200">
           <button
             onClick={() => setActiveTab("add")}
-            className={`flex-1 py-3 font-semibold text-sm md:text-base transition-all ${
+            className={`flex-1 py-4 text-base font-semibold transition-all duration-300 relative ${
               activeTab === "add"
-                ? "bg-indigo-600 text-white shadow-inner"
-                : "bg-gray-100 text-gray-600 hover:bg-indigo-50"
+                ? "bg-white text-indigo-700 border-b-4 border-indigo-600 shadow-md z-10"
+                : "bg-indigo-100 text-gray-600 hover:text-indigo-700 hover:bg-indigo-200 border-b-4 border-transparent"
             }`}
           >
             🕒 Add Attendance
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`flex-1 py-3 font-semibold text-sm md:text-base transition-all ${
+            className={`flex-1 py-4 text-base font-semibold transition-all duration-300 relative ${
               activeTab === "history"
-                ? "bg-indigo-600 text-white shadow-inner"
-                : "bg-gray-100 text-gray-600 hover:bg-indigo-50"
+                ? "bg-white text-indigo-700 border-b-4 border-indigo-600 shadow-md z-10"
+                : "bg-indigo-100 text-gray-600 hover:text-indigo-700 hover:bg-indigo-200 border-b-4 border-transparent"
             }`}
           >
             📜 Attendance History
@@ -33,7 +33,7 @@ export default function AttendanceTabs() {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-8 bg-white rounded-b-2xl transition-all duration-500 ease-in-out">
           {activeTab === "add" ? <AttendanceForm /> : <AttendanceHistory />}
         </div>
       </div>
