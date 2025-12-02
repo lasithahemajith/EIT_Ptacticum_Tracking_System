@@ -1,89 +1,54 @@
 import { motion } from "framer-motion";
-import { ClipboardList, FileText, Clock, LogOut } from "lucide-react";
+import { ClipboardList, Clock, UserCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import Sidebar from "@/components/Sidebar";
 
-export default function Home() {
-  const { user, logout } = useAuth();
+export default function StudentHome() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100">
-      
-
-      {/* ✅ Main Content Area */}
       <div className="flex-1 flex flex-col">
-
         {/* Main Content */}
         <main className="flex-1 p-10 overflow-y-auto">
           <motion.h2
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="text-3xl font-semibold text-indigo-900 mb-8"
+            className="text-3xl font-semibold text-indigo-900 mb-3"
           >
-            Practicum Dashboard
+            Welcome, {user?.name || "Student"}
           </motion.h2>
+          <p className="text-gray-600 mb-10 max-w-2xl">
+            This is your Practicum Tracker Dashboard. You can record your daily
+            practicum activities, review your submissions, and monitor
+            your progress. Keep your logs and attendance up-to-date.
+          </p>
 
-          {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <DashboardCard
-              icon={<ClipboardList size={28} />}
-              title="Daily Logs"
-              desc="View and manage your practicum log entries."
-              color="from-blue-500 to-indigo-600"
-              action={() => navigate("/logpapers")}
-            />
+          {/* Student Actions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
             <DashboardCard
               icon={<Clock size={28} />}
-              title="Add Log Entry"
-              desc="Record your daily activities, hours, and reflections."
+              title="Add Practicum Log"
+              desc="Record your daily practicum activities, reflections, and hours completed."
               color="from-purple-500 to-pink-500"
-              action={() => navigate("/logpapers/add")}
+              action={() => navigate("/student/logpapers")}
             />
+
             <DashboardCard
-              icon={<FileText size={28} />}
-              title="Reports"
-              desc="Generate summaries and performance analytics."
-              color="from-green-500 to-emerald-600"
-              action={() => navigate("#")}
+              icon={<UserCheck size={28} />}
+              title="Add Attendance"
+              desc="Mark your attendance for today — Class or Practicum."
+              color="from-blue-500 to-indigo-600"
+              action={() => navigate("/student/attendance")}
             />
           </div>
-
-          {/* Summary Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-12 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
-          >
-            <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-              Summary Statistics
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <SummaryCard
-                label="Total Logs Submitted"
-                value="14"
-                color="text-blue-600"
-              />
-              <SummaryCard
-                label="Hours Completed"
-                value="72"
-                color="text-green-600"
-              />
-              <SummaryCard
-                label="Mentor Feedbacks"
-                value="5"
-                color="text-purple-600"
-              />
-            </div>
-          </motion.section>
         </main>
 
         {/* Footer */}
-        <footer className="text-center py-4 text-indigo-600 text-sm opacity-80">
-          © 2025 EIT Practicum Tracker
+        <footer className="text-center py-6 text-indigo-600 text-sm opacity-80">
+          © 2025 EIT Practicum Tracker | Student Dashboard
         </footer>
       </div>
     </div>
@@ -94,9 +59,10 @@ export default function Home() {
 function DashboardCard({ icon, title, desc, color, action }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.03 }}
+      whileHover={{ scale: 1.04 }}
       transition={{ duration: 0.2 }}
-      className={`bg-gradient-to-r ${color} text-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-2xl transition`}
+      onClick={action}
+      className={`cursor-pointer bg-gradient-to-r ${color} text-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-2xl transition`}
     >
       <div>
         <div className="mb-3">{icon}</div>
@@ -105,7 +71,7 @@ function DashboardCard({ icon, title, desc, color, action }) {
       </div>
       <button
         onClick={action}
-        className="mt-4 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-md transition"
+        className="mt-5 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-md transition"
       >
         Open
       </button>

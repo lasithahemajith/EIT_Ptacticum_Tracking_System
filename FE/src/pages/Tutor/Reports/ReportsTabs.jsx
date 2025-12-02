@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, useParams, useLocation } from "react-router-dom";
 import HistoryLogs from "./HistoryLogs";
+import AttendanceOverview from "./AttendanceOverview";
 
 /**
  * When the URL matches /tutor/reports/:id we render the Outlet (TutorFeedback)
@@ -21,8 +22,8 @@ export default function ReportsTabs() {
 
   const tabs = [
     { key: "history", label: "History Logs", component: <HistoryLogs /> },
-    { key: "summary", label: "Summary Reports", component: <div>Coming soon…</div> },
-    { key: "attendance", label: "Attendance Overview", component: <div>Coming soon…</div> },
+  //  { key: "summary", label: "Summary Reports", component: <div>Coming soon…</div> },
+    { key: "attendance", label: "Attendance Overview", component: <AttendanceOverview /> },
   ];
 
   const [activeTab, setActiveTab] = useState("history");

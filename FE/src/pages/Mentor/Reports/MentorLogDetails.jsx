@@ -8,22 +8,32 @@ export default function MentorLogDetails() {
 
   const [log, setLog] = useState(null);
   const [comment, setComment] = useState("");
+  const [feedbacks, setFeedbacks] = useState([]); // tutor feedbacks
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
 
-  // 🔹 Load the student log details
+  // 🔹 Load the student log details and tutor feedbacks
   useEffect(() => {
+    let mounted = true;
     (async () => {
       try {
         const { data } = await API.get(`/logpaper/${id}`);
+        if (!mounted) return;
         setLog(data);
         if (data.mentorComment) setComment(data.mentorComment);
+
+        // fetch tutor feedbacks
+        const fbRes = await API.get(`/api/tutor-feedback/${id}`);
+        if (mounted && Array.isArray(fbRes.data)) setFeedbacks(fbRes.data);
       } catch (err) {
         console.error("Error loading log:", err);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     })();
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   // 🔹 Submit mentor verification
@@ -88,6 +98,29 @@ export default function MentorLogDetails() {
         </div>
       </div>
 
+      {/* 🔹 Tutor Feedback Highlight for Pending Stage */}
+      {log.status === "Pending" && feedbacks.length > 0 && (
+        <div className="bg-blue-50 border-l-4 border-blue-300 rounded-xl shadow p-6">
+          <h3 className="font-semibold mb-2 text-blue-800">
+            Tutor Feedback (For Mentor Reference)
+          </h3>
+          <ul className="space-y-3">
+            {feedbacks.map((fb, i) => (
+              <li
+                key={fb._id || i}
+                className="p-3 border border-blue-200 rounded-lg bg-white text-sm text-gray-800 shadow-sm"
+              >
+                <p className="whitespace-pre-line">{fb.feedback}</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  — {fb.tutorName ? `Reviewed by ${fb.tutorName} ` : ""}
+                  on {fb.createdAt ? new Date(fb.createdAt).toLocaleString() : "-"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* 🧠 Mentor Feedback or Verified View */}
       {log.status === "Pending" && !submitted ? (
         <div className="bg-white border rounded-xl shadow p-6">
@@ -123,6 +156,31 @@ export default function MentorLogDetails() {
           <p className="mt-3 text-xs text-green-600">
             ✅ This log has been verified and is locked for editing.
           </p>
+        </div>
+      )}
+
+      {/* 📋 Tutor Feedback after Verification */}
+      {log.status !== "Pending" && (
+        <div className="bg-white border rounded-xl shadow p-6">
+          <h3 className="font-semibold mb-3 text-indigo-700">Tutor Feedback</h3>
+          {feedbacks && feedbacks.length > 0 ? (
+            <ul className="space-y-3">
+              {feedbacks.map((fb, i) => (
+                <li
+                  key={fb._id || i}
+                  className="p-3 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700"
+                >
+                  <p className="whitespace-pre-line">{fb.feedback}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    — {fb.tutorName ? `Reviewed by ${fb.tutorName} ` : ""}
+                    on {fb.createdAt ? new Date(fb.createdAt).toLocaleString() : "-"}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500 italic">No tutor feedback yet.</p>
+          )}
         </div>
       )}
     </div>
