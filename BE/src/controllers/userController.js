@@ -1,6 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+
 const prisma = new PrismaClient();
 
+// Utility: generate secure random password
+const generateRandomPassword = (length = 10) => {
+  return crypto.randomBytes(length).toString("base64").slice(0, length);
+};
+
+// ✅ Get profile (unchanged)
 export const getProfile = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -9,43 +18,63 @@ export const getProfile = async (req, res) => {
     });
     res.json(user);
   } catch (err) {
+    console.error("getProfile error:", err);
     res.status(500).json({ error: "Failed to fetch profile" });
   }
 };
 
-
-import bcrypt from "bcryptjs";
-
-// Create user (Tutor-only)
+// ✅ Create user (Tutor only)
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, role, phone, studentIndex, company } = req.body;
 
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ error: "name, email, password, role are required" });
-    }
-    if (!["Student", "Mentor", "Tutor"].includes(role)) {
-      return res.status(400).json({ error: "Invalid role" });
+    if (!name || !email || !role) {
+      return res.status(400).json({ error: "Name, email, and role required" });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) return res.status(409).json({ error: "Email already exists" });
+    if (existing) {
+      return res.status(400).json({ error: "User already exists" });
+    }
 
-    const hash = await bcrypt.hash(password, 10);
+    // Auto-generate password and hash it
+    const autoPassword = generateRandomPassword(10);
+    const hashedPassword = await bcrypt.hash(autoPassword, 10);
 
-    const user = await prisma.user.create({
-      data: { name, email, password: hash, role }
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        role,
+        password: hashedPassword,
+        phone: phone || null,
+        studentIndex: role === "Student" ? studentIndex || null : null,
+        company: role === "Mentor" ? company || null : null,
+      },
     });
 
-    const { password: _, ...safe } = user;
-    return res.status(201).json({ message: "User created", user: safe });
+    // Return generated password (visible once to Tutor)
+    res.status(201).json({
+      message: "✅ User created successfully",
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        phone: newUser.phone,
+        studentIndex: newUser.studentIndex,
+        company: newUser.company,
+      },
+      generatedPassword: autoPassword,
+      info: "Password auto-generated and securely stored (visible once to Tutor).",
+    });
   } catch (err) {
     console.error("createUser error:", err);
-    return res.status(500).json({ error: "Failed to create user" });
+    res.status(500).json({ error: "Failed to create user" });
   }
 };
 
-// Get users by role (?role=Student|Mentor|Tutor) or all if omitted
+// ✅ Get users by role (includes new fields)
 export const getUsersByRole = async (req, res) => {
   try {
     const { role } = req.query;
@@ -53,125 +82,107 @@ export const getUsersByRole = async (req, res) => {
     const users = await prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        phone: true,
+        studentIndex: true,
+        company: true,
+      },
     });
-    return res.json(users);
+    res.json(users);
   } catch (err) {
     console.error("getUsersByRole error:", err);
-    return res.status(500).json({ error: "Failed to fetch users" });
+    res.status(500).json({ error: "Failed to fetch users" });
   }
 };
 
-// Map mentor ↔ student (Tutor-only)
+// ✅ Mapping features (unchanged)
 export const mapMentorToStudent = async (req, res) => {
   try {
     const { mentorId, studentId } = req.body;
-    if (!mentorId || !studentId) {
-      return res.status(400).json({ error: "mentorId and studentId are required" });
-    }
+    if (!mentorId || !studentId)
+      return res.status(400).json({ error: "mentorId and studentId required" });
 
     const mentor = await prisma.user.findUnique({ where: { id: Number(mentorId) } });
     const student = await prisma.user.findUnique({ where: { id: Number(studentId) } });
 
-    if (!mentor || mentor.role !== "Mentor") {
-      return res.status(400).json({ error: "mentorId must refer to a Mentor" });
-    }
-    if (!student || student.role !== "Student") {
-      return res.status(400).json({ error: "studentId must refer to a Student" });
-    }
+    if (!mentor || mentor.role !== "Mentor")
+      return res.status(400).json({ error: "Invalid mentorId" });
+    if (!student || student.role !== "Student")
+      return res.status(400).json({ error: "Invalid studentId" });
 
     const mapping = await prisma.mentorStudentMap.upsert({
-      where: { mentorId_studentId: { mentorId: Number(mentorId), studentId: Number(studentId) } },
-      update: {}, // idempotent
-      create: { mentorId: Number(mentorId), studentId: Number(studentId) },
-      include: {
-        mentor: { select: { id: true, name: true, email: true } },
-        student: { select: { id: true, name: true, email: true } },
-      }
+      where: { mentorId_studentId: { mentorId: +mentorId, studentId: +studentId } },
+      update: {},
+      create: { mentorId: +mentorId, studentId: +studentId },
     });
 
-    return res.status(201).json({ message: "Mapped", mapping });
+    res.status(201).json({ message: "Mapped successfully", mapping });
   } catch (err) {
     console.error("mapMentorToStudent error:", err);
-    return res.status(500).json({ error: "Failed to map mentor and student" });
+    res.status(500).json({ error: "Failed to map mentor and student" });
   }
 };
 
-// List mappings (optionally filter by mentorId or studentId)
 export const getMappings = async (req, res) => {
   try {
-    const { mentorId, studentId } = req.query;
-    const where = {};
-    if (mentorId) where.mentorId = Number(mentorId);
-    if (studentId) where.studentId = Number(studentId);
-
     const mappings = await prisma.mentorStudentMap.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
       include: {
         mentor: { select: { id: true, name: true, email: true } },
         student: { select: { id: true, name: true, email: true } },
-      }
+      },
+      orderBy: { createdAt: "desc" },
     });
-
-    return res.json(mappings);
+    res.json(mappings);
   } catch (err) {
     console.error("getMappings error:", err);
-    return res.status(500).json({ error: "Failed to fetch mappings" });
+    res.status(500).json({ error: "Failed to fetch mappings" });
   }
 };
 
-// Unmap (Tutor-only)
 export const unmapMentorFromStudent = async (req, res) => {
   try {
     const { mentorId, studentId } = req.body;
-    if (!mentorId || !studentId) {
-      return res.status(400).json({ error: "mentorId and studentId are required" });
-    }
+    if (!mentorId || !studentId)
+      return res.status(400).json({ error: "mentorId and studentId required" });
 
     await prisma.mentorStudentMap.delete({
-      where: { mentorId_studentId: { mentorId: Number(mentorId), studentId: Number(studentId) } },
+      where: { mentorId_studentId: { mentorId: +mentorId, studentId: +studentId } },
     });
 
-    return res.json({ message: "Unmapped" });
+    res.json({ message: "Unmapped successfully" });
   } catch (err) {
     console.error("unmapMentorFromStudent error:", err);
-    return res.status(500).json({ error: "Failed to unmap mentor and student" });
+    res.status(500).json({ error: "Failed to unmap" });
   }
 };
 
-// ✅ Get students assigned to logged-in mentor
 export const getAssignedStudents = async (req, res) => {
   try {
-    if (req.user.role !== "Mentor") {
-      return res.status(403).json({ error: "Access denied. Mentors only." });
-    }
+    if (req.user.role !== "Mentor")
+      return res.status(403).json({ error: "Access denied" });
 
-    const mentorId = req.user.id;
-
-    // 🔹 Query MentorStudentMap and join with student User records
     const mappings = await prisma.mentorStudentMap.findMany({
-      where: { mentorId },
+      where: { mentorId: req.user.id },
       include: {
         student: {
           select: {
             id: true,
             name: true,
             email: true,
-            role: true,
-            createdAt: true,
+            phone: true,
+            studentIndex: true,
           },
         },
       },
     });
-
-    // Flatten to return just the student objects
-    const students = mappings.map((m) => m.student);
-
-    res.json(students);
+    res.json(mappings.map((m) => m.student));
   } catch (err) {
-    console.error("❌ getAssignedStudents error:", err);
-    res.status(500).json({ error: err.message });
+    console.error("getAssignedStudents error:", err);
+    res.status(500).json({ error: "Failed to fetch assigned students" });
   }
 };
-

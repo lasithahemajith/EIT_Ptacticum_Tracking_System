@@ -14,16 +14,22 @@ enum Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(Student)
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  role         String
+  phone        String?
+  studentIndex String?  @unique // only for Students
+  company      String? // only for Mentors
+  createdAt    DateTime @default(now())
 
   // Relations for mentor-student mapping
   mentorMappings  MentorStudentMap[] @relation("MentorRelation")
   studentMappings MentorStudentMap[] @relation("StudentRelation")
+
+  // ✅ New relation for attendance tracking (opposite side of Attendance.student)
+  attendances Attendance[]
 }
 
 model MentorStudentMap {
@@ -37,5 +43,19 @@ model MentorStudentMap {
 
   @@unique([mentorId, studentId])
   @@index([mentorId])
+  @@index([studentId])
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  type      String // "Class" or "Practicum"
+  attended  String // "Yes" or "No"
+  reason    String? // Null if attended = Yes
+  createdAt DateTime @default(now())
+
+  // ✅ Define proper relation name linking to User.attendances
+  student User @relation(fields: [studentId], references: [id])
+
   @@index([studentId])
 }
