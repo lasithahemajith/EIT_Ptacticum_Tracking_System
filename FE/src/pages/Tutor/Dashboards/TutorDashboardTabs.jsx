@@ -10,7 +10,7 @@ export default function TutorDashboardTabs() {
   const tabs = [
     { key: "attendance", label: "📊 Attendance Overview" },
     { key: "logs", label: "🗂 Practicum Log Summary" },
-    { key: "progress", label: "👩‍🎓 Student Progress Tracker" },
+   // { key: "progress", label: "👩‍🎓 Student Progress Tracker" },
   ];
 
   return (
