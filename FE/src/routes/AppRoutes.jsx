@@ -11,44 +11,67 @@ import Login from "@/pages/Auth/Login";
 import StudentHome from "@/pages/Student/Home/StudentHome";
 import LogPaperTabs from "@/pages/Student/LogPaper/LogPaperTabs";
 import LogPaperDetails from "@/pages/Student/LogPaper/LogPaperDetails";
+import AttendanceTabs from "@/pages/Student/Attendance/AttendanceTabs";
 
 // MENTOR
 import MentorHome from "@/pages/Mentor/Home/MentorHome";
 import MentorStudents from "@/pages/Mentor/MentorStudents";
-import MentorReports from "@/pages/mentor/Reports/MentorReports";
-import MentorLogDetails from "@/pages/mentor/Reports/MentorLogDetails";
+import MentorReports from "@/pages/Mentor/Reports/MentorReports";
+import MentorLogDetails from "@/pages/Mentor/Reports/MentorLogDetails";
+import MentorAttendance from "@/pages/Mentor/MentorAttendance";
 
 // TUTOR
 import TutorHome from "@/pages/Tutor/Home/TutorHome";
 import UserTabs from "@/pages/Tutor/Users/UserTabs";
 import ReportsTabs from "@/pages/Tutor/Reports/ReportsTabs";
 import TutorFeedback from "@/pages/Tutor/Reports/TutorFeedback";
+import TutorDashboardTabs from "@/pages/Tutor/Dashboards/TutorDashboardTabs";
 
+/* -------------------------------------------------------------
+   🔐 Protected Route Wrapper
+------------------------------------------------------------- */
 function ProtectedRoute({ children, allowedRoles }) {
   const { token, user, loading } = useAuth();
 
   if (loading) return <div>Loading...</div>;
   if (!token) return <Navigate to="/login" replace />;
+
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/student/home" replace />;
+    // If logged in but not allowed for this page → redirect to their own dashboard
+    if (user?.role === "Student") return <Navigate to="/student/home" replace />;
+    if (user?.role === "Mentor") return <Navigate to="/mentor/home" replace />;
+    if (user?.role === "Tutor") return <Navigate to="/tutor/home" replace />;
   }
 
   return children;
 }
 
+/* -------------------------------------------------------------
+   🌐 App Routes
+------------------------------------------------------------- */
 export default function AppRoutes() {
-  const { token, loading } = useAuth();
+  const { token, user, loading } = useAuth();
+
   if (loading) return <div>Loading...</div>;
+
+  // ✅ Determine default redirect after login
+  const getHomeRoute = () => {
+    if (!user) return "/login";
+    if (user.role === "Student") return "/student/home";
+    if (user.role === "Mentor") return "/mentor/home";
+    if (user.role === "Tutor") return "/tutor/home";
+    return "/login";
+  };
 
   return (
     <Routes>
-      {/* Public */}
+      {/* ---------- PUBLIC ROUTE ---------- */}
       <Route
         path="/login"
-        element={!token ? <Login /> : <Navigate to="/student/home" replace />}
+        element={!token ? <Login /> : <Navigate to={getHomeRoute()} replace />}
       />
 
-      {/* Protected Layout */}
+      {/* ---------- PROTECTED LAYOUT ---------- */}
       <Route
         path="/"
         element={
@@ -57,12 +80,37 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* ---------- STUDENT ---------- */}
-        <Route path="student/home" element={<StudentHome />} />
-        <Route path="student/logpapers" element={<LogPaperTabs />} />
-        <Route path="student/logpapers/:id" element={<LogPaperDetails />} />
+        {/* ---------- STUDENT ROUTES ---------- */}
+        <Route
+          path="student/home"
+          element={
+            <ProtectedRoute allowedRoles={["Student"]}>
+              <StudentHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="student/logpapers"
+          element={
+            <ProtectedRoute allowedRoles={["Student"]}>
+              <LogPaperTabs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="student/logpapers/:id"
+          element={
+            <ProtectedRoute allowedRoles={["Student"]}>
+              <LogPaperDetails />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route path="/student/attendance" element={<AttendanceTabs />} />
 
-        {/* ---------- MENTOR ---------- */}
+
+
+        {/* ---------- MENTOR ROUTES ---------- */}
         <Route
           path="mentor/home"
           element={
@@ -95,8 +143,9 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="/mentor/attendance" element={<MentorAttendance />} />
 
-        {/* ---------- TUTOR (nested reports + feedback details) ---------- */}
+        {/* ---------- TUTOR ROUTES ---------- */}
         <Route
           path="tutor/home"
           element={
@@ -121,7 +170,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          {/* Child route renders inside <ReportsTabs /> via <Outlet /> */}
           <Route
             path=":id"
             element={
@@ -131,10 +179,13 @@ export default function AppRoutes() {
             }
           />
         </Route>
+
+        <Route path="/tutor/dashboards" element={<TutorDashboardTabs />} />
+
       </Route>
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/student/home" replace />} />
+      {/* ---------- FALLBACK ---------- */}
+      <Route path="*" element={<Navigate to={getHomeRoute()} replace />} />
     </Routes>
   );
 }

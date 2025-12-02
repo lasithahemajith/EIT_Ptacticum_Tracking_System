@@ -1,136 +1,164 @@
 import { motion } from "framer-motion";
-import { Users, ClipboardList, CheckCircle, Clock, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ClipboardList, Users, FileText, Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import API from "@/api/axios";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function MentorDashboard() {
+export default function MentorHome() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const [stats, setStats] = useState({
+    assignedStudents: 0,
+    totalLogs: 0,
+    pendingReviews: 0,
+    approvedLogs: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [studentsRes, logsRes] = await Promise.all([
+          API.get("/users/assigned-students"),
+          API.get("/logpaper/my"),
+        ]);
+
+        const logs = logsRes.data || [];
+        const pending = logs.filter((l) => l.status === "Pending").length;
+        const approved = logs.filter((l) => l.status === "Verified").length;
+
+        if (active) {
+          setStats({
+            assignedStudents: studentsRes.data?.length || 0,
+            totalLogs: logs.length,
+            pendingReviews: pending,
+            approvedLogs: approved,
+          });
+        }
+      } catch (err) {
+        console.error("Mentor dashboard load error:", err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100 to-purple-100">
-      {/* ✅ Main Content */}
-      <div className="flex-1 flex flex-col">
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100">
+      <div className="flex-1 flex flex-col p-10 overflow-y-auto">
         {/* Header */}
-        <main className="flex-1 p-10 overflow-y-auto">
-          <motion.h2
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-semibold text-indigo-900 mb-8"
-          >
-            Mentor Dashboard
-          </motion.h2>
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-3xl font-semibold text-indigo-900 mb-2"
+        >
+          Welcome back, {user?.name || "Mentor"}
+        </motion.h2>
+        <p className="text-gray-600 mb-10">
+          Here’s a quick overview of your assigned students and their practicum
+          progress.
+        </p>
 
-          {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <DashboardCard
-              icon={<Users size={28} />}
-              title="Assigned Students"
-              desc="View and manage your assigned practicum students."
-              color="from-blue-500 to-indigo-600"
-              action={() => navigate("/mentor/students")}
-            />
-            <DashboardCard
-              icon={<ClipboardList size={28} />}
-              title="Profile"
-              desc="Review and verify practicum log entries."
-              color="from-purple-500 to-pink-500"
-              // action={() => navigate("/mentor/logs")}
-            />
-            <DashboardCard
-              icon={<FileText size={28} />}
-              title="Reports"
-              desc="Analyze student progress and performance reports."
-              color="from-green-500 to-emerald-600"
-              action={() => navigate("/mentor/reports")}
-            />
-          </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <SummaryCard
+            label="Assigned Students"
+            value={stats.assignedStudents}
+            icon={<Users />}
+            color="text-indigo-600"
+            onClick={() => navigate("/mentor/students")}
+          />
+          <SummaryCard
+            label="All Logs"
+            value={stats.totalLogs}
+            icon={<ClipboardList />}
+            color="text-blue-600"
+            onClick={() => navigate("/mentor/reports")}
+          />
 
-          {/* Summary Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-12 bg-white rounded-2xl shadow-xl p-8 border border-indigo-100"
-          >
-            <h3 className="text-xl font-semibold text-indigo-800 mb-4">
-              Mentor Summary Overview
-            </h3>
+          {/* 🔹 Highlighted Pending Verifications */}
+          <SummaryCard
+            label="Pending Verifications"
+            value={stats.pendingReviews}
+            icon={<Clock />}
+            color="text-blue-700"
+            highlight
+            onClick={() => navigate("/mentor/reports?status=Pending")}
+          />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <SummaryCard
-                label="Assigned Students"
-                value="8"
-                color="text-blue-600"
-              />
-              <SummaryCard
-                label="Total Logs Submitted"
-                value="94"
-                color="text-indigo-600"
-              />
-              <SummaryCard
-                label="Pending Approvals"
-                value="12"
-                color="text-orange-500"
-              />
-              <SummaryCard
-                label="Approved Logs"
-                value="82"
-                color="text-green-600"
-              />
-            </div>
-
-            {/* Optional: small insights area */}
-            <div className="mt-10 text-sm text-gray-600">
-              <p>
-                ✅ Keep reviewing pending logs promptly to maintain student progress tracking.
-              </p>
-              <p>
-                📊 Generate reports to monitor weekly or monthly practicum engagement.
-              </p>
-            </div>
-          </motion.section>
-        </main>
+          <SummaryCard
+            label="Verified Logs"
+            value={stats.approvedLogs}
+            icon={<FileText />}
+            color="text-green-600"
+            onClick={() => navigate("/mentor/reports?status=Verified")}
+          />
+        </div>
 
         {/* Footer */}
-        <footer className="text-center py-4 text-indigo-600 text-sm opacity-80">
-          © 2025 EIT Practicum Tracker
+        <footer className="text-center py-6 text-indigo-600 text-sm opacity-80 mt-12">
+          © 2025 EIT Practicum Tracker | Mentor Dashboard
         </footer>
       </div>
     </div>
   );
 }
 
-/* 🔹 Reusable DashboardCard Component */
-function DashboardCard({ icon, title, desc, color, action }) {
+/* 🔹 SummaryCard Component */
+function SummaryCard({ label, value, icon, color, highlight, onClick }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.03 }}
-      transition={{ duration: 0.2 }}
-      className={`bg-gradient-to-r ${color} text-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:shadow-2xl transition`}
+      whileHover={{ scale: 1.05 }}
+      onClick={onClick}
+      className={`cursor-pointer flex flex-col items-center p-6 rounded-xl shadow-sm border transition ${
+        highlight
+          ? "bg-gradient-to-br from-blue-200 to-blue-100 border-blue-400 shadow-lg ring-2 ring-blue-300 animate-pulse-slow"
+          : "bg-white border-indigo-100 hover:shadow-md"
+      }`}
     >
-      <div>
-        <div className="mb-3">{icon}</div>
-        <h3 className="text-xl font-semibold mb-1">{title}</h3>
-        <p className="text-sm opacity-90">{desc}</p>
+      <div className={`mb-2 ${color} ${highlight ? "animate-pulse" : ""}`}>
+        {icon}
       </div>
-      <button
-        onClick={action}
-        className="mt-4 bg-white/20 hover:bg-white/30 text-sm font-semibold px-4 py-2 rounded-md transition"
+      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      <p
+        className={`text-sm mt-1 ${
+          highlight ? "text-blue-900 font-semibold" : "text-gray-600"
+        }`}
       >
-        Open
-      </button>
+        {label}
+      </p>
     </motion.div>
   );
 }
 
-/* 🔹 Reusable SummaryCard Component */
-function SummaryCard({ label, value, color }) {
+/* 🔹 InsightBox Component */
+function InsightBox({ title, items }) {
   return (
-    <div className="flex flex-col items-center bg-gradient-to-b from-indigo-50 to-white p-6 rounded-xl border border-indigo-100 shadow-sm">
-      <p className="text-gray-600 text-sm mb-2">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+    <div className="bg-gradient-to-b from-indigo-50 to-white p-6 rounded-xl border border-indigo-100 shadow-sm">
+      <h4 className="font-semibold text-indigo-700 mb-3">{title}</h4>
+      <ul className="space-y-2 text-sm text-gray-700">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-center gap-2">
+            <div className="h-2 w-2 bg-indigo-400 rounded-full"></div>
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

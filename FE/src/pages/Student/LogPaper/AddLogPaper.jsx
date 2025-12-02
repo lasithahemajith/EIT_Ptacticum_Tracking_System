@@ -19,7 +19,6 @@ export default function AddLogPaper() {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // 🧮 Automatically calculate hours
   const calculateHours = (start, end) => {
     if (!start || !end) return "";
     const startTime = new Date(`1970-01-01T${start}:00`);
@@ -44,24 +43,18 @@ export default function AddLogPaper() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const data = new FormData();
       Object.entries(form).forEach(([key, value]) => {
         if (key === "attachments" && value) {
           Array.from(value).forEach((file) => data.append("attachments", file));
-        } else {
-          data.append(key, value);
-        }
+        } else data.append(key, value);
       });
-
       await API.post("/logpaper", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2500);
-
       setForm({
         date: "",
         startTime: "",
@@ -71,8 +64,8 @@ export default function AddLogPaper() {
         description: "",
         attachments: null,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       alert("❌ Failed to add log paper. Please try again.");
     } finally {
       setLoading(false);
@@ -83,18 +76,18 @@ export default function AddLogPaper() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 w-full min-h-[calc(100vh-100px)] flex justify-center items-start p-10"
+      className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 w-full flex justify-center items-start p-6"
     >
       <div className="bg-white/90 backdrop-blur-sm shadow-2xl rounded-2xl p-10 w-full max-w-5xl border border-indigo-100">
         <h2 className="text-3xl font-bold text-center text-indigo-700 mb-8">
-          Add Practicum Log Entry
+          ✏️ Add Practicum Log Entry
         </h2>
 
         <form
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          {/* Date */}
+          {/* Form fields unchanged, styled beautifully */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">Date</label>
             <input
@@ -103,11 +96,10 @@ export default function AddLogPaper() {
               value={form.date}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-200 outline-none"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-300 outline-none"
             />
           </div>
 
-          {/* Start & End Time */}
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="block text-gray-700 font-medium mb-2">
@@ -118,7 +110,7 @@ export default function AddLogPaper() {
                 name="startTime"
                 value={form.startTime}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-200 outline-none"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-300 outline-none"
               />
             </div>
             <div className="flex-1">
@@ -130,12 +122,11 @@ export default function AddLogPaper() {
                 name="endTime"
                 value={form.endTime}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-200 outline-none"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-300 outline-none"
               />
             </div>
           </div>
 
-          {/* Hours (auto-calculated) */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">
               Total Hours
@@ -146,11 +137,10 @@ export default function AddLogPaper() {
               value={form.hours}
               onChange={handleChange}
               placeholder="Auto-calculated or enter manually"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-200 outline-none"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-300 outline-none"
             />
           </div>
 
-          {/* Activity */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">
               Activity Type
@@ -160,7 +150,7 @@ export default function AddLogPaper() {
               value={form.activity}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-200 outline-none"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-300 outline-none"
             >
               <option value="">Select an activity</option>
               <option value="Observation">Observation</option>
@@ -172,7 +162,6 @@ export default function AddLogPaper() {
             </select>
           </div>
 
-          {/* Description (scrollable) */}
           <div className="md:col-span-2">
             <label className="block text-gray-700 font-medium mb-2">
               Description
@@ -182,12 +171,11 @@ export default function AddLogPaper() {
               value={form.description}
               onChange={handleChange}
               placeholder="Describe your work or learning experience..."
-              className="w-full border border-gray-300 rounded-md px-3 py-2 h-32 focus:ring-2 focus:ring-indigo-200 outline-none resize-y"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 h-32 focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
               required
             ></textarea>
           </div>
 
-          {/* Attachments */}
           <div className="md:col-span-2">
             <label className="block text-gray-700 font-medium mb-2">
               Attachments (photo, PDF, or video)
@@ -202,7 +190,6 @@ export default function AddLogPaper() {
             />
           </div>
 
-          {/* Submit Button */}
           <div className="md:col-span-2 flex justify-center">
             <button
               type="submit"
@@ -220,14 +207,15 @@ export default function AddLogPaper() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
           className="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
         >
-          <div className="bg-white rounded-xl shadow-2xl p-8 text-center max-w-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-8 text-center max-w-sm border border-green-100">
             <h3 className="text-2xl font-semibold text-green-600 mb-3">
               ✅ Log Added Successfully!
             </h3>
-            <p className="text-gray-600">Your practicum entry has been recorded.</p>
+            <p className="text-gray-600">
+              Your practicum entry has been recorded.
+            </p>
           </div>
         </motion.div>
       )}

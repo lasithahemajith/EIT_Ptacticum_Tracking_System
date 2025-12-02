@@ -12,24 +12,23 @@ export default function LogPaperTabs() {
   ];
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-lg shadow-sm border border-indigo-100 px-6 py-4">
-      {/* Page Title */}
+    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-indigo-50 via-white to-indigo-100 rounded-xl border border-indigo-100 p-6 shadow-inner">
       <motion.h2
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="text-2xl font-semibold text-indigo-800 mb-4 tracking-tight"
+        className="text-3xl font-semibold text-indigo-800 mb-6 tracking-tight"
       >
-        My Practicum Logs
+        🧾 My Practicum Logs
       </motion.h2>
 
       {/* Tabs */}
-      <div className="flex space-x-3 border-b border-indigo-200 mb-4">
+      <div className="flex space-x-3 border-b border-indigo-200 mb-5">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-md transition-all duration-300 ${
+            className={`px-5 py-2.5 text-sm font-semibold rounded-t-md transition-all duration-300 ${
               activeTab === tab.key
                 ? "bg-indigo-600 text-white shadow-md"
                 : "text-gray-600 hover:text-indigo-700 hover:bg-indigo-50"
@@ -40,7 +39,7 @@ export default function LogPaperTabs() {
         ))}
       </div>
 
-      {/* Animated Tab Content */}
+      {/* Animated Content */}
       <motion.div
         key={activeTab}
         initial={{ opacity: 0 }}
