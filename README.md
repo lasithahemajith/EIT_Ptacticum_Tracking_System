@@ -207,6 +207,8 @@ Sync schema with MySQL
 
 --------------------------------------------------
 👤 6️⃣ Seed Super Admin
+
+
 npx prisma db seed
 
 
