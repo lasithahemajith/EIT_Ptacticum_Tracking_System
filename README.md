@@ -129,7 +129,8 @@ mongodb://127.0.0.1:27017
 
 -------------------------------------------
 📥 2️⃣ Clone Repository
-git clone <your-repo-url>
+
+git clone <repo URL>
 cd PTS
 
 -------------------------------------------
