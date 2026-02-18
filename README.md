@@ -207,7 +207,7 @@ Sync schema with MySQL
 
 --------------------------------------------------
 👤 6️⃣ Seed Super Admin
-npm run seed
+npx prisma db seed
 
 
 This creates:
