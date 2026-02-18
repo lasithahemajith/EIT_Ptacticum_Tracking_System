@@ -66,10 +66,10 @@ EIT_Pratictum_Tracking_System/
 | **Mentor** | Review logs, verify and comment, approve/reject |
 | **Tutor (Super Admin)** | Manage users, assign mentors, view overall reports |
 
-----------------------------------------------
-----------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 🧑‍💻 Local Deployment – Practicum Tracking System (PTS)
 
@@ -86,6 +86,7 @@ The PTS system uses:
 🖥️ Vite + React (Frontend)
 
 Both databases must be running locally.
+---------------------------------------------------
 
 📌 1️⃣ Prerequisites
 
@@ -126,10 +127,12 @@ Default runs on:
 
 mongodb://127.0.0.1:27017
 
+-------------------------------------------
 📥 2️⃣ Clone Repository
 git clone <your-repo-url>
 cd PTS
 
+-------------------------------------------
 🗄️ 3️⃣ Database Setup
 🔵 MySQL Setup
 
@@ -152,6 +155,7 @@ Ensure MongoDB is running:
 
 mongod
 
+--------------------------------------------
 🧱 4️⃣ Backend Setup (/be)
 Step 1: Navigate to Backend
 cd be
@@ -183,6 +187,7 @@ MongoDB is running
 
 practicum database exists in MySQL
 
+---------------------------------------------------
 ⚙️ 5️⃣ Prisma Setup (MySQL)
 
 PTS uses Prisma for MySQL.
@@ -199,6 +204,7 @@ Create all relational tables
 
 Sync schema with MySQL
 
+--------------------------------------------------
 👤 6️⃣ Seed Super Admin
 npm run seed
 
@@ -208,6 +214,7 @@ This creates:
 Email: admin@eit.ac.nz
 Password: Admin@123
 
+--------------------------------------------------
 ▶️ 7️⃣ Run Backend
 npm run dev
 
@@ -221,6 +228,7 @@ You should see:
 
 Server running on port 5000
 
+-----------------------------------------------------
 🖥️ 8️⃣ Frontend Setup (/fe)
 
 Open a new terminal.
@@ -248,6 +256,8 @@ http://localhost:5173
 
 Open in browser.
 
+
+------------------------------------------------------
 📂 Upload Directory Setup
 
 Ensure upload folder exists:
@@ -260,10 +270,12 @@ This is required for:
 
 UPLOAD_PATH=uploads/logpapers
 
+-------------------------
 🔐 Default Login
 Email: admin@eit.ac.nz
 Password: Admin@123
 
+------------------------------------------------------
 🧹 Git Hygiene
 
 Do NOT push:
@@ -280,6 +292,7 @@ uploads/
 
 Ensure they are inside .gitignore.
 
+-------------------------------------------------------
 🚨 Common Issues & Fixes
 ❌ MySQL Connection Error
 
@@ -302,6 +315,8 @@ npx prisma migrate reset
 lsof -i :5000
 kill -9 <PID>
 
+-----------------------------------------------------------
+-----------------------------------------------------------
 ✅ Final Local Deployment Checklist
 
  Node installed
