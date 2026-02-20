@@ -71,52 +71,83 @@ EIT_Pratictum_Tracking_System/
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-🧑‍💻 Local Deployment – Practicum Tracking System (PTS)
+🧑‍💻 Practicum Tracking System (PTS) – Local Deployment Guide
 
-The PTS system uses:
+The Practicum Tracking System (PTS) is a full-stack web application built with:
 
 🧱 Node.js (Backend)
 
 ⚡ Prisma ORM
 
-🗄️ MySQL (Relational Data)
+🗄️ MySQL (Relational Database)
 
-🍃 MongoDB (Logs / Documents)
+🍃 MongoDB (Document Database)
 
 🖥️ Vite + React (Frontend)
 
----------------------------------------------------
+⚠️ Important: Both MySQL and MongoDB must be running locally before starting the backend.
 
-🗄️ Database Setup – Practicum Tracking System (PTS)
+📌 1️⃣ Prerequisites
 
-The PTS system uses a hybrid database architecture:
+Before running the project, install the following:
 
-Database	Purpose
+✅ Node.js (LTS)
 
-MySQL	Relational data (Users, Roles, Attendance, Evaluations, etc.)
-MongoDB	Log papers, file metadata, document-based records
+Download:
+👉 https://nodejs.org/
 
-Both databases must be running locally before starting the backend.
-------------------------------------------
-🔵 MySQL Setup (Relational Database)
+Verify installation:
 
-1️⃣ Install MySQL
+node -v
+npm -v
 
-Download MySQL Community Server:
+✅ Git
 
-👉 https://dev.mysql.com/downloads/mysql/
+Download:
+👉 https://git-scm.com/
+
+Verify:
+
+git --version
+
+✅ MySQL
+
+Install MySQL Community Server.
 
 During installation:
 
 Username: root
 
 Password: root
-(Ensure it matches your .env)
+(Must match your .env)
 
---------------
-2️⃣ Start MySQL Service
+MySQL runs on:
 
-On Windows:
+localhost:3306
+
+✅ MongoDB
+
+Install MongoDB Community Edition.
+
+Default runs on:
+
+mongodb://127.0.0.1:27017
+
+📥 2️⃣ Clone the Repository
+git clone <your-repository-url>
+cd PTS
+
+🗄️ 3️⃣ Database Setup
+
+PTS uses a hybrid database architecture:
+
+Database	Purpose
+MySQL	Users, Roles, Attendance, Evaluations
+MongoDB	Log papers, file metadata, documents
+🔵 MySQL Setup
+Step 1 — Start MySQL Service (Windows)
+
+Press:
 
 Win + R → services.msc
 
@@ -127,10 +158,9 @@ Or start manually:
 
 net start MySQL80
 
------------------
-3️⃣ Create Required Database
+Step 2 — Create Database
 
-Open MySQL Workbench or CLI:
+Open MySQL CLI:
 
 mysql -u root -p
 
@@ -140,7 +170,7 @@ Enter password:
 root
 
 
-Then run:
+Run:
 
 CREATE DATABASE practicum;
 
@@ -154,43 +184,10 @@ You should see:
 
 practicum
 
----------------
-4️⃣ Prisma Migration (Required)
+🟢 MongoDB Setup
+Step 1 — Start MongoDB Service
 
-After backend dependencies are installed:
-
-
-cd be
-
-npx prisma generate
-
-npx prisma migrate dev --name init
-
-
-This will:
-
-**Create all tables inside practicum
-
-Sync Prisma schema with MySQL**
-
-----------------------------------------
-🟢 MongoDB Setup (Document Database)
-
-MongoDB is used for storing flexible document-based data such as log papers and file records.
-
------------------
-1️⃣ Install MongoDB
-
-Download MongoDB Community Edition:
-
-👉 https://www.mongodb.com/try/download/community
-
-Install with default settings.
-
------------------------
-2️⃣ Start MongoDB Service
-
-Open:
+Press:
 
 Win + R → services.msc
 
@@ -201,8 +198,7 @@ Or start manually:
 
 net start MongoDB
 
------------------------
-3️⃣ Verify MongoDB Connection
+Step 2 — Verify MongoDB
 
 Open terminal:
 
@@ -214,81 +210,26 @@ Switch to project database:
 use practicum
 
 
-MongoDB will automatically create the database when first used.
+MongoDB creates the database automatically when first used.
 
-No manual schema setup required.
-----------------------------------------------------------------
------------------------------------------------------------------
-
-**FE and BE Setup**
-
--------------------
-📌 1️⃣ Prerequisites
-
-Install the following:
-
-✅ Node.js (LTS)
-
-https://nodejs.org/
-
-Check:
-
-node -v
-npm -v
-
-✅ Git
-
-https://git-scm.com/
-
-Check:
-
-git --version
-
-✅ MySQL
-
-Install MySQL Server.
-
-Start MySQL service and ensure it runs on:
-
-localhost:3306
-
-✅ MongoDB
-
-Install MongoDB Community Edition.
-
-Start MongoDB service.
-
-Default runs on:
-
-mongodb://127.0.0.1:27017
-
--------------------------------------------
-📥 2️⃣ Clone Repository
-
-git clone <repo URL>
-cd PTS
-
--------------------------------------------
-🗄️ 3️⃣ Database Setup
-
-done in the part above.
-
---------------------------------------------
 🧱 4️⃣ Backend Setup (/be)
-Step 1: Navigate to Backend
+Step 1 — Navigate to Backend
 cd be
 
-Step 2: Install Dependencies
+Step 2 — Install Dependencies
 npm install
 
-Step 3: Configure .env
+Step 3 — Configure Environment Variables
 
-Create .env inside /be with:
+Create a file named .env inside /be:
 
 PORT=5000
 JWT_SECRET=superSecret123
 
+# MySQL
 DATABASE_URL=mysql://root:root@localhost:3306/practicum
+
+# MongoDB
 MONGODB_URI=mongodb://127.0.0.1:27017/practicum
 
 UPLOAD_PATH=uploads/logpapers
@@ -297,7 +238,7 @@ SUPERADMIN_EMAIL=admin@eit.ac.nz
 SUPERADMIN_PASSWORD=Admin@123
 
 
-⚠️ Make sure:
+⚠️ Ensure:
 
 MySQL is running
 
@@ -305,10 +246,7 @@ MongoDB is running
 
 practicum database exists in MySQL
 
----------------------------------------------------
-⚙️ 5️⃣ Prisma Setup (MySQL) -Already done above
-
-PTS uses Prisma for MySQL.
+⚙️ 5️⃣ Prisma Setup (MySQL)
 
 Run:
 
@@ -320,21 +258,32 @@ This will:
 
 Create all relational tables
 
-Sync schema with MySQL
+Sync Prisma schema with MySQL
 
---------------------------------------------------
-👤 6️⃣ Seed Super Admin - Already done above
+👤 6️⃣ Seed Super Admin
+
+Run:
 
 npx prisma db seed
 
 
-This creates:
+This creates the default admin account:
 
 Email: admin@eit.ac.nz
 Password: Admin@123
 
---------------------------------------------------
-▶️ 7️⃣ Run Backend
+📂 7️⃣ Create Upload Folder
+
+Inside backend folder:
+
+mkdir -p uploads/logpapers
+
+
+Required for:
+
+UPLOAD_PATH=uploads/logpapers
+
+▶️ 8️⃣ Run Backend
 npm run dev
 
 
@@ -347,24 +296,23 @@ You should see:
 
 Server running on port 5000
 
------------------------------------------------------
-🖥️ 8️⃣ Frontend Setup (/fe)
+🖥️ 9️⃣ Frontend Setup (/fe)
 
 Open a new terminal.
 
-Step 1: Navigate
+Step 1 — Navigate to Frontend
 cd fe
 
-Step 2: Install Dependencies
+Step 2 — Install Dependencies
 npm install
 
-Step 3: Configure Frontend .env
+Step 3 — Configure Frontend Environment
 
 Create .env inside /fe:
 
 VITE_API_URL=http://localhost:5000
 
-Step 4: Run Frontend
+Step 4 — Run Frontend
 npm run dev
 
 
@@ -373,31 +321,15 @@ Frontend runs at:
 http://localhost:5173
 
 
-Open in browser.
+Open in your browser.
 
-
-------------------------------------------------------
-📂 Upload Directory Setup
-
-Ensure upload folder exists:
-
-cd be
-mkdir -p uploads/logpapers
-
-
-This is required for:
-
-UPLOAD_PATH=uploads/logpapers
-
--------------------------
 🔐 Default Login
 Email: admin@eit.ac.nz
 Password: Admin@123
 
-------------------------------------------------------
 🧹 Git Hygiene
 
-Do NOT push:
+Do NOT push these files:
 
 .env
 node_modules/
@@ -409,9 +341,8 @@ uploads/
 .key
 
 
-Ensure they are inside .gitignore.
+Ensure they are included in .gitignore.
 
--------------------------------------------------------
 🚨 Common Issues & Fixes
 ❌ MySQL Connection Error
 
@@ -421,7 +352,7 @@ Ensure they are inside .gitignore.
 
 ❌ MongoDB Not Connecting
 
-✔ Ensure MongoDB service running
+✔ Ensure MongoDB service is running
 ✔ Check port 27017
 
 ❌ Prisma Migration Error
@@ -431,14 +362,19 @@ Reset database:
 npx prisma migrate reset
 
 ❌ Port 5000 Already in Use
+
+Find process:
+
 lsof -i :5000
+
+
+Kill process:
+
 kill -9 <PID>
 
------------------------------------------------------------
------------------------------------------------------------
-✅ Final Local Deployment Checklist
+✅ Final Checklist
 
- Node installed
+ Node.js installed
 
  MySQL running
 
@@ -448,7 +384,7 @@ kill -9 <PID>
 
  .env configured
 
- Prisma migrated
+ Prisma migration completed
 
  Super Admin seeded
 
@@ -457,3 +393,5 @@ kill -9 <PID>
  Backend running (localhost:5000)
 
  Frontend running (localhost:5173)
+
+Your PTS system should now be running locally 🎉
