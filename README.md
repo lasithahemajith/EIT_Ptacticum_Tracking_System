@@ -88,6 +88,134 @@ The PTS system uses:
 Both databases must be running locally.
 ---------------------------------------------------
 
+🗄️ Database Setup – Practicum Tracking System (PTS)
+
+The PTS system uses a hybrid database architecture:
+
+Database	Purpose
+MySQL	Relational data (Users, Roles, Attendance, Evaluations, etc.)
+MongoDB	Log papers, file metadata, document-based records
+
+Both databases must be running locally before starting the backend.
+------------------------------------------
+🔵 MySQL Setup (Relational Database)
+1️⃣ Install MySQL
+
+Download MySQL Community Server:
+
+👉 https://dev.mysql.com/downloads/mysql/
+
+During installation:
+
+Username: root
+
+Password: root
+(Ensure it matches your .env)
+
+--------------
+2️⃣ Start MySQL Service
+
+On Windows:
+
+Win + R → services.msc
+
+
+Ensure MySQL80 is running.
+
+Or start manually:
+
+net start MySQL80
+
+-----------------
+3️⃣ Create Required Database
+
+Open MySQL Workbench or CLI:
+
+mysql -u root -p
+
+
+Enter password:
+
+root
+
+
+Then run:
+
+CREATE DATABASE practicum;
+
+
+Verify:
+
+SHOW DATABASES;
+
+
+You should see:
+
+practicum
+
+---------------
+4️⃣ Prisma Migration (Required)
+
+After backend dependencies are installed:
+
+cd be
+npx prisma generate
+npx prisma migrate dev --name init
+
+
+This will:
+
+Create all tables inside practicum
+
+Sync Prisma schema with MySQL
+
+----------------------------------------
+🟢 MongoDB Setup (Document Database)
+
+MongoDB is used for storing flexible document-based data such as log papers and file records.
+
+-----------------
+1️⃣ Install MongoDB
+
+Download MongoDB Community Edition:
+
+👉 https://www.mongodb.com/try/download/community
+
+Install with default settings.
+
+-----------------------
+2️⃣ Start MongoDB Service
+
+Open:
+
+Win + R → services.msc
+
+
+Ensure MongoDB service is running.
+
+Or start manually:
+
+net start MongoDB
+
+-----------------------
+3️⃣ Verify MongoDB Connection
+
+Open terminal:
+
+mongosh
+
+
+Switch to project database:
+
+use practicum
+
+
+MongoDB will automatically create the database when first used.
+
+No manual schema setup required.
+----------------------------------------------------------------
+-----------------------------------------------------------------
+
 📌 1️⃣ Prerequisites
 
 Install the following:
