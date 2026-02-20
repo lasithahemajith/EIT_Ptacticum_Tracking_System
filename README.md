@@ -69,9 +69,11 @@ EIT_Pratictum_Tracking_System/
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 🧑‍💻 Practicum Tracking System (PTS) – Local Deployment Guide
+
+--------------------
 
 The Practicum Tracking System (PTS) is a full-stack web application built with:
 
@@ -87,6 +89,7 @@ The Practicum Tracking System (PTS) is a full-stack web application built with:
 
 ⚠️ Important: Both MySQL and MongoDB must be running locally before starting the backend.
 
+-------------------------------
 📌 1️⃣ Prerequisites
 
 Before running the project, install the following:
@@ -133,10 +136,14 @@ Default runs on:
 
 mongodb://127.0.0.1:27017
 
+---------------------------------------
 📥 2️⃣ Clone the Repository
+
 git clone <your-repository-url>
+
 cd PTS
 
+-------------------------------
 🗄️ 3️⃣ Database Setup
 
 PTS uses a hybrid database architecture:
@@ -144,7 +151,9 @@ PTS uses a hybrid database architecture:
 Database	Purpose
 MySQL	Users, Roles, Attendance, Evaluations
 MongoDB	Log papers, file metadata, documents
+
 🔵 MySQL Setup
+
 Step 1 — Start MySQL Service (Windows)
 
 Press:
@@ -185,6 +194,7 @@ You should see:
 practicum
 
 🟢 MongoDB Setup
+
 Step 1 — Start MongoDB Service
 
 Press:
@@ -212,11 +222,17 @@ use practicum
 
 MongoDB creates the database automatically when first used.
 
+---------------------------------
+---------------------------------
+
 🧱 4️⃣ Backend Setup (/be)
+
 Step 1 — Navigate to Backend
+
 cd be
 
 Step 2 — Install Dependencies
+
 npm install
 
 Step 3 — Configure Environment Variables
@@ -246,11 +262,13 @@ MongoDB is running
 
 practicum database exists in MySQL
 
+----------------------------------------
 ⚙️ 5️⃣ Prisma Setup (MySQL)
 
 Run:
 
 npx prisma generate
+
 npx prisma migrate dev --name init
 
 
@@ -260,6 +278,7 @@ Create all relational tables
 
 Sync Prisma schema with MySQL
 
+------------------------------------
 👤 6️⃣ Seed Super Admin
 
 Run:
@@ -270,8 +289,10 @@ npx prisma db seed
 This creates the default admin account:
 
 Email: admin@eit.ac.nz
+
 Password: Admin@123
 
+-----------------------------------------
 📂 7️⃣ Create Upload Folder
 
 Inside backend folder:
@@ -283,7 +304,9 @@ Required for:
 
 UPLOAD_PATH=uploads/logpapers
 
+--------------------------------------------
 ▶️ 8️⃣ Run Backend
+
 npm run dev
 
 
@@ -296,14 +319,17 @@ You should see:
 
 Server running on port 5000
 
+------------------------------------------
 🖥️ 9️⃣ Frontend Setup (/fe)
 
 Open a new terminal.
 
 Step 1 — Navigate to Frontend
+
 cd fe
 
 Step 2 — Install Dependencies
+
 npm install
 
 Step 3 — Configure Frontend Environment
@@ -313,6 +339,7 @@ Create .env inside /fe:
 VITE_API_URL=http://localhost:5000
 
 Step 4 — Run Frontend
+
 npm run dev
 
 
@@ -324,9 +351,13 @@ http://localhost:5173
 Open in your browser.
 
 🔐 Default Login
+
 Email: admin@eit.ac.nz
+
 Password: Admin@123
 
+
+------------------------------------------------------------------
 🧹 Git Hygiene
 
 Do NOT push these files:
@@ -343,6 +374,8 @@ uploads/
 
 Ensure they are included in .gitignore.
 
+------------------------------
+---------------------------------
 🚨 Common Issues & Fixes
 ❌ MySQL Connection Error
 
@@ -372,6 +405,9 @@ Kill process:
 
 kill -9 <PID>
 
+
+------------------------
+-----------------------
 ✅ Final Checklist
 
  Node.js installed
@@ -394,4 +430,5 @@ kill -9 <PID>
 
  Frontend running (localhost:5173)
 
+--------------------------------
 Your PTS system should now be running locally 🎉
