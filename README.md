@@ -85,7 +85,6 @@ The PTS system uses:
 
 🖥️ Vite + React (Frontend)
 
-Both databases must be running locally.
 ---------------------------------------------------
 
 🗄️ Database Setup – Practicum Tracking System (PTS)
@@ -93,12 +92,14 @@ Both databases must be running locally.
 The PTS system uses a hybrid database architecture:
 
 Database	Purpose
+
 MySQL	Relational data (Users, Roles, Attendance, Evaluations, etc.)
 MongoDB	Log papers, file metadata, document-based records
 
 Both databases must be running locally before starting the backend.
 ------------------------------------------
 🔵 MySQL Setup (Relational Database)
+
 1️⃣ Install MySQL
 
 Download MySQL Community Server:
@@ -158,16 +159,19 @@ practicum
 
 After backend dependencies are installed:
 
+
 cd be
+
 npx prisma generate
+
 npx prisma migrate dev --name init
 
 
 This will:
 
-Create all tables inside practicum
+**Create all tables inside practicum
 
-Sync Prisma schema with MySQL
+Sync Prisma schema with MySQL**
 
 ----------------------------------------
 🟢 MongoDB Setup (Document Database)
@@ -216,6 +220,9 @@ No manual schema setup required.
 ----------------------------------------------------------------
 -----------------------------------------------------------------
 
+**FE and BE Setup**
+
+-------------------
 📌 1️⃣ Prerequisites
 
 Install the following:
@@ -263,26 +270,8 @@ cd PTS
 
 -------------------------------------------
 🗄️ 3️⃣ Database Setup
-🔵 MySQL Setup
 
-Login to MySQL and create database:
-
-CREATE DATABASE practicum;
-
-
-Make sure MySQL username/password match:
-
-root / root
-
-🟢 MongoDB Setup
-
-MongoDB automatically creates the database when first used.
-
-No manual creation required.
-
-Ensure MongoDB is running:
-
-mongod
+done in the part above.
 
 --------------------------------------------
 🧱 4️⃣ Backend Setup (/be)
@@ -317,7 +306,7 @@ MongoDB is running
 practicum database exists in MySQL
 
 ---------------------------------------------------
-⚙️ 5️⃣ Prisma Setup (MySQL)
+⚙️ 5️⃣ Prisma Setup (MySQL) -Already done above
 
 PTS uses Prisma for MySQL.
 
@@ -334,8 +323,7 @@ Create all relational tables
 Sync schema with MySQL
 
 --------------------------------------------------
-👤 6️⃣ Seed Super Admin
-
+👤 6️⃣ Seed Super Admin - Already done above
 
 npx prisma db seed
 
